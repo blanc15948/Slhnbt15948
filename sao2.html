@@ -267,7 +267,6 @@
         </div>
     </div>
 
-    <!-- 1. 前任者データ -->
     <div class="card" style="border-left: 5px solid #6c757d;">
         <div class="card-header" onclick="toggleCard(this)">
             <h2 style="color: #495057;">前任者データ <span class="badge-active">入力あり</span></h2>
@@ -294,7 +293,6 @@
         </div>
     </div>
 
-    <!-- 2. 累計データ -->
     <div class="card" style="border-left: 5px solid #007bff;">
         <div class="card-header" onclick="toggleCard(this)">
             <h2 style="color: #007bff;">累計データ <span class="badge-active">入力あり</span></h2>
@@ -353,13 +351,12 @@
                 <div class="counter-group">
                     <button class="btn-cnt minus" onclick="changeVal('chance_b_count', -1)">-</button>
                     <input type="number" id="chance_b_count" class="input-val count-field" placeholder="0" min="0" oninput="calculateSetting()">
-                    <button class="btn-cnt plus" onclick="chance_b_count" onclick="changeVal('chance_b_count', 1)">+</button>
+                    <button class="btn-cnt plus" onclick="changeVal('chance_b_count', 1)">+</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 3. 低確スイカからのSC当選判別 -->
     <div class="card" style="border-left: 5px solid #28a745;">
         <div class="card-header" onclick="toggleCard(this)">
             <h2 style="color: #28a745;">通常時スイカからのSC当選判別 <span class="badge-active">入力あり</span></h2>
@@ -386,14 +383,38 @@
         </div>
     </div>
 
-    <!-- 4. 強チェリーからのCZ当選判別 -->
+    <div class="card" style="border-left: 5px solid #ffc107;">
+        <div class="card-header" onclick="toggleCard(this)">
+            <h2 style="color: #d39e00;">バレットカウンターからのCZ当選判別 <span class="badge-active">入力あり</span></h2>
+            <span class="arrow-icon">▼</span>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>バレットカウンター溜まった回数<br><span style="font-size:0.75rem; color:#6c757d; font-weight:normal;">(MAXまで溜まった合計回数)</span></label>
+                <div class="counter-group">
+                    <button class="btn-cnt minus" onclick="changeVal('bullet_total', -1)">-</button>
+                    <input type="number" id="bullet_total" class="input-val count-field" placeholder="0" min="0" oninput="calculateSetting()">
+                    <button class="btn-cnt plus" onclick="changeVal('bullet_total', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>バレットカウンターからCZ当選回数<br><span style="font-size:0.75rem; color:#6c757d; font-weight:normal;">(到達時にCZ当選した回数)</span></label>
+                <div class="counter-group">
+                    <button class="btn-cnt minus" onclick="changeVal('bullet_cz', -1)">-</button>
+                    <input type="number" id="bullet_cz" class="input-val count-field" placeholder="0" min="0" oninput="calculateSetting()">
+                    <button class="btn-cnt plus" onclick="changeVal('bullet_cz', 1)">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card" style="border-left: 5px solid #dc3545;">
         <div class="card-header" onclick="toggleCard(this)">
             <h2 style="color: #dc3545;">強チェリーからのCZ当選判別 <span class="badge-active">入力あり</span></h2>
             <span class="arrow-icon">▼</span>
         </div>
         <div class="card-body">
-            <!-- 通常時 -->
             <div class="form-group">
                 <label>通常時 強チェリー試行回数<br><span style="font-size:0.75rem; color:#6c757d; font-weight:normal;">(通常時の強チェリー引いた回数)</span></label>
                 <div class="counter-group">
@@ -414,7 +435,6 @@
 
             <hr style="border: 0; border-top: 1px dashed #dee2e6; margin: 12px 0;">
 
-            <!-- 高確時 -->
             <div class="form-group">
                 <label>高確時 強チェリー試行回数<br><span style="font-size:0.75rem; color:#6c757d; font-weight:normal;">(高確滞在時の強チェリー引いた回数)</span></label>
                 <div class="counter-group">
@@ -435,7 +455,6 @@
         </div>
     </div>
 
-    <!-- 5. CZ失敗時恩恵判別 -->
     <div class="card" style="border-left: 5px solid #17a2b8;">
         <div class="card-header" onclick="toggleCard(this)">
             <h2 style="color: #17a2b8;">CZ失敗時恩恵判別 <span class="badge-active">入力あり</span></h2>
@@ -471,7 +490,6 @@
         </div>
     </div>
 
-    <!-- 6. 終了画面カウンター -->
     <div class="card">
         <div class="card-header" onclick="toggleCard(this)">
             <h2>終了画面（自分遊技分） <span class="badge-active">入力あり</span></h2>
@@ -572,7 +590,6 @@
         </div>
     </div>
 
-    <!-- 7. トロフィー -->
     <div class="card" style="border-left: 5px solid #d4af37;">
         <div class="card-header" onclick="toggleCard(this)">
             <h2 style="color: #d4af37;">トロフィー <span class="badge-active">入力あり</span></h2>
@@ -626,7 +643,6 @@
         </div>
     </div>
 
-    <!-- 8. エンディング示唆 -->
     <div class="card" style="border-left: 5px solid #17a2b8;">
         <div class="card-header" onclick="toggleCard(this)">
             <h2 style="color: #17a2b8;">エンディング キャラ示唆 <span class="badge-active">入力あり</span></h2>
@@ -698,7 +714,6 @@
         </div>
     </div>
 
-    <!-- リアルタイム結果（常時表示） -->
     <div class="card" style="margin-top: 20px; border-top: 4px solid #007bff;">
         <h2 style="margin-bottom: 12px; border-bottom: 2px solid #007bff; padding-bottom: 5px;">総合判別結果 (リアルタイム)</h2>
         <div id="results"></div>
@@ -827,6 +842,9 @@ const SPECS = {
     chance_b: [1/1057, 1/1021, 1/926, 1/860, 1/720, 1/620],
     sc_low: [0.402, 0.445, 0.410, 0.484, 0.422, 0.551],
     
+    // バレットカウンターからのCZ当選率
+    bullet_cz: [0.18, 0.20, 0.23, 0.25, 0.33, 0.40],
+
     // 通常時 強チェリーからのCZ当選率
     cherry_cz_low: [0.200, 0.210, 0.200, 0.250, 0.200, 0.330],
     // 高確時 強チェリーからのCZ当選率
@@ -912,9 +930,12 @@ function calculateSetting() {
     const CZDirect = getVal('cz_direct_count');
     const ChanceB = getVal('chance_b_count');
     
-    // スイカ・強チェリー関連データ
+    // スイカ・バレット・強チェリー関連データ
     const WatermelonLowTotal = getVal('watermelon_low_total');
     const WatermelonSCLow = getVal('watermelon_sc_low');
+
+    const BulletTotal = getVal('bullet_total');
+    const BulletCZ = getVal('bullet_cz');
     
     const CherryLowTotal = getVal('cherry_low_total');
     const CherryCZLow = getVal('cherry_cz_low');
@@ -1017,6 +1038,19 @@ function calculateSetting() {
             const pFail = 1.0 - pHit;
 
             likelihoods[i] *= Math.pow(pHit, WatermelonSCLow) * Math.pow(pFail, failCount);
+        }
+    }
+
+    // バレットカウンターからのCZ当選率（二項分布）
+    if (BulletTotal > 0 && BulletTotal >= BulletCZ) {
+        const failCount = BulletTotal - BulletCZ;
+        for (let i = 0; i < 6; i++) {
+            if (likelihoods[i] === 0) continue;
+
+            const pHit = SPECS.bullet_cz[i];
+            const pFail = 1.0 - pHit;
+
+            likelihoods[i] *= Math.pow(pHit, BulletCZ) * Math.pow(pFail, failCount);
         }
     }
 

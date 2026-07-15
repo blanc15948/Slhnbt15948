@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D JET EVADER - GIGA LASER & STACK SHIELD</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #050510; font-family: sans-serif; touch-action: none; user-select: none; }
+        
+        #info { position: absolute; top: 10px; left: 10px; color: #00ffcc; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px #00ffcc; pointer-events: none; z-index: 20; display: none; }
+        
+        #start-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 5, 16, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            cursor: pointer;
+        }
+        .game-title {
+            color: #00ffcc;
+            font-size: 38px;
+            font-weight: bold;
+            text-shadow: 0 0 20px #00ffcc;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .tap-start {
+            color: #ffffff;
+            font-size: 22px;
+            animation: blink 1.2s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        #countdown {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffff00;
+            font-size: 72px;
+            font-weight: bold;
+            text-shadow: 0 0 20px #ffff00;
+            pointer-events: none;
+            z-index: 25;
+        }
+
+        /* 隠しコマンド WARNING テキスト */
+        #secret-notice {
+            display: none;
+            position: absolute;
+            top: 25%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff0033;
+            font-size: 32px;
+            font-weight: 900;
+            text-align: center;
+            text-shadow: 0 0 25px #ff0000, 0 0 10px #ffff00;
+            pointer-events: none;
+            z-index: 28;
+            white-space: nowrap;
+            letter-spacing: 2px;
+            animation: warningPulse 0.3s infinite alternate;
+        }
+        .warning-sub {
+            font-size: 18px;
+            color: #ffff00;
+            margin-top: 8px;
+            text-shadow: 0 0 10px #ffaa00;
+        }
+        @keyframes warningPulse {
+            0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+        }
+
+        /* LEVEL UP 通知テキスト */
+        #levelup-notice {
+            display: none;
+            position: absolute;
+            top: 40%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffcc00;
+            font-size: 42px;
+            font-weight: 900;
+            text-align: center;
+            text-shadow: 0 0 20px #ffcc00, 0 0 10px #ffffff;
+            pointer-events: none;
+            z-index: 29;
+            white-space: nowrap;
+            animation: levelUpPop 2.0s ease-out forwards;
+        }
+        .levelup-sub {
+            font-size: 20px;
+            color: #ffffff;
+            margin-top: 5px;
+            text-shadow: 0 0 10px #ff0055;
+        }
+        @keyframes levelUpPop {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            15% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            85% { transform: translate(-50%, -50%) scale(1.0); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+        }
+
+        /* 画面上部の警告通知 (UFO襲来) */
+        #ufo-warning {
+            display: none;
+            position: absolute;
+            top: 15%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff0055;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 0 0 15px #ff0055;
+            pointer-events: none;
+            z-index: 27;
+            letter-spacing: 3px;
+            animation: warningPulse 0.3s infinite alternate;
+        }
+
+        /* 赤いUFO用・レーザー警告テキスト */
+        #laser-warning-ui {
+            display: none;
+            position: absolute;
+            top: 25%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff3300;
+            font-size: 36px;
+            font-weight: 900;
+            text-align: center;
+            text-shadow: 0 0 20px #ff0000, 0 0 10px #ffffff;
+            pointer-events: none;
+            z-index: 28;
+            letter-spacing: 4px;
+            animation: warningPulse 0.2s infinite alternate;
+        }
+
+        /* 画面右上のバフ状態表示 */
+        #buff-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            pointer-events: none;
+        }
+        .buff-badge {
+            background: rgba(0, 223, 255, 0.2);
+            border: 1px solid #00dfff;
+            color: #00dfff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 0 0 5px #00dfff;
+            margin-bottom: 5px;
+            display: none;
+            box-shadow: 0 0 10px rgba(0, 223, 255, 0.3);
+        }
+
+        #gameover { 
+            display: none; 
+            position: absolute; 
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            color: #ff3366; 
+            font-size: 32px; 
+            font-weight: bold; 
+            text-align: center; 
+            text-shadow: 0 0 15px #ff3366; 
+            pointer-events: none; 
+            z-index: 20; 
+        }
+        #restart-hint { font-size: 16px; color: white; margin-top: 10px; text-shadow: none; }
+        
+        .btn-arrow {
+            position: absolute;
+            bottom: 30px;
+            width: 75px;
+            height: 75px;
+            background: rgba(0, 255, 204, 0.2);
+            border: 2px solid #00ffcc;
+            border-radius: 50%;
+            color: #00ffcc;
+            font-size: 36px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+            z-index: 10;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            display: none; 
+            transition: background 0.1s, border-color 0.1s, box-shadow 0.1s;
+        }
+        .btn-arrow:active, .btn-arrow.active {
+            background: rgba(0, 255, 204, 0.6);
+            transform: scale(0.92);
+        }
+        #btn-left { left: 25px; }
+        #btn-right { right: 25px; }
+
+        .btn-arrow.limit-warning {
+            animation: redPulse 0.25s infinite alternate !important;
+        }
+        @keyframes redPulse {
+            0% {
+                background: rgba(255, 0, 85, 0.4);
+                border-color: #ff0055;
+                color: #ff0055;
+                box-shadow: 0 0 20px #ff0055;
+            }
+            100% {
+                background: rgba(255, 0, 85, 0.9);
+                border-color: #ffffff;
+                color: #ffffff;
+                box-shadow: 0 0 35px #ff0055, 0 0 10px #ffffff;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="start-screen">
+        <div class="game-title">3D JET EVADER</div>
+        <div class="tap-start">TAP TO START</div>
+    </div>
+
+    <div id="countdown">3</div>
+    <div id="secret-notice">
+        ⚠️ WARNING ⚠️
+        <div class="warning-sub">5X SCORE & 500% CRAZY MODE!</div>
+    </div>
+    
+    <div id="levelup-notice">
+        ⚡ LEVEL UP! ⚡
+        <div class="levelup-sub" id="levelup-sub-text">+1% SCORE & MORE!</div>
+    </div>
+
+    <div id="ufo-warning">⚠️ INTRUDER DETECTED ⚠️</div>
+    
+    <div id="laser-warning-ui">⚠️ LASER WARNING ⚠️</div>
+
+    <div id="buff-container">
+        <div id="shield-badge" class="buff-badge">SHIELD ACTIVE [x0]</div>
+    </div>
+
+    <div id="info">SCORE: <span id="score">0</span></div>
+    <div id="gameover">GAME OVER<div id="restart-hint">画面タップ または スペースキーでリスタート</div></div>
+    
+    <div id="btn-left" class="btn-arrow">←</div>
+    <div id="btn-right" class="btn-arrow">→</div>
+
+    <script>
+        // ==========================================
+        //  SYNTHESIZED SOUND SYSTEM (Web Audio API)
+        // ==========================================
+        let audioCtx = null;
+        let masterGain = null;
+        let isAudioInitialized = false;
+
+        function initAudio() {
+            if (isAudioInitialized) return;
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            masterGain = audioCtx.createGain();
+            masterGain.gain.setValueAtTime(0.12, audioCtx.currentTime); 
+            masterGain.connect(audioCtx.destination);
+            isAudioInitialized = true;
+            
+            startBPMClock();
+        }
+
+        function playSE(type) {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+
+            if (type === 'coin') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, now); 
+                osc.frequency.exponentialRampToValueAtTime(1760, now + 0.1); 
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now);
+                osc.stop(now + 0.16);
+            } 
+            else if (type === 'shield-get') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.4);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+            else if (type === 'shield-break') {
+                const bufferSize = audioCtx.sampleRate * 0.25;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 1000;
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.8, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(masterGain);
+                noise.start(now);
+                noise.stop(now + 0.25);
+            }
+            else if (type === 'warp') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(80, now);
+                osc.frequency.exponentialRampToValueAtTime(2500, now + 0.6);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now);
+                osc.stop(now + 0.6);
+            }
+            else if (type === 'laser') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1500, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            }
+            else if (type === 'gigalaser') {
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc1.type = 'sawtooth';
+                osc1.frequency.setValueAtTime(55, now); 
+                osc1.frequency.linearRampToValueAtTime(65, now + 5);
+
+                osc2.type = 'square';
+                osc2.frequency.setValueAtTime(110, now);
+                osc2.frequency.linearRampToValueAtTime(115, now + 5);
+
+                gain.gain.setValueAtTime(0.35, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 5.0);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(masterGain);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 5.0);
+                osc2.stop(now + 5.0);
+            }
+            else if (type === 'siren') {
+                for(let i = 0; i < 3; i++) {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, now + i * 0.3);
+                    osc.frequency.linearRampToValueAtTime(500, now + i * 0.3 + 0.15);
+                    osc.frequency.linearRampToValueAtTime(300, now + i * 0.3 + 0.3);
+                    gain.gain.setValueAtTime(0.25, now + i * 0.3);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.3 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(masterGain);
+                    osc.start(now + i * 0.3);
+                    osc.stop(now + i * 0.3 + 0.3);
+                }
+            }
+            else if (type === 'gameover') {
+                const freqs = [330, 294, 262, 196]; 
+                freqs.forEach((f, index) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = f;
+                    gain.gain.setValueAtTime(0.2, now + index * 0.15);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + index * 0.15 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(masterGain);
+                    osc.start(now + index * 0.15);
+                    osc.stop(now + index * 0.15 + 0.3);
+                });
+            }
+        }
+
+        let baseBpm = 135;
+        let clockTimer = null;
+        let stepIndex = 0;
+
+        const melodyPattern = [
+            523, 587, 659, 0,   659, 698, 784, 0,   
+            880, 0,   784, 0,   659, 0,   523, 587, 
+            587, 0,   659, 698, 0,   698, 784, 880, 
+            988, 0,   880, 784, 1047, 0,  0,   0    
+        ];
+
+        const bassPattern = [
+            110, 110, 110, 110,  130, 130, 130, 130, 
+            146, 146, 146, 146,  165, 165, 196, 165  
+        ];
+
+        function startBPMClock() {
+            if (clockTimer) clearInterval(clockTimer);
+            
+            const stepInterval = () => {
+                let currentBpm = baseBpm + (levelCount * 12); 
+                if (warpTimeLeft > 0) currentBpm += 45;      
+                return (60 / currentBpm) / 4 * 1000; 
+            };
+
+            const triggerNextStep = () => {
+                if (gameState === 'PLAYING') {
+                    playBGMStep();
+                }
+                clockTimer = setTimeout(triggerNextStep, stepInterval());
+            };
+            
+            triggerNextStep();
+        }
+
+        function playBGMStep() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+
+            const bassFreq = bassPattern[stepIndex % bassPattern.length];
+            if (bassFreq > 0) {
+                const bassOsc = audioCtx.createOscillator();
+                const bassGain = audioCtx.createGain();
+                bassOsc.type = 'triangle'; 
+                bassOsc.frequency.setValueAtTime(bassFreq, now);
+                bassGain.gain.setValueAtTime(0.22, now);
+                bassGain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                bassOsc.connect(bassGain);
+                bassGain.connect(masterGain);
+                bassOsc.start(now);
+                bassOsc.stop(now + 0.13);
+            }
+
+            const melodyFreq = melodyPattern[stepIndex % melodyPattern.length];
+            if (melodyFreq > 0 && (stepIndex % 2 === 0 || Math.random() < 0.3)) {
+                const leadOsc = audioCtx.createOscillator();
+                const leadGain = audioCtx.createGain();
+                leadOsc.type = (warpTimeLeft > 0) ? 'sawtooth' : 'square'; 
+                leadOsc.frequency.setValueAtTime(melodyFreq, now);
+                leadGain.gain.setValueAtTime(0.06, now);
+                leadGain.gain.exponentialRampToValueAtTime(0.005, now + 0.15);
+                leadOsc.connect(leadGain);
+                leadGain.connect(masterGain);
+                leadOsc.start(now);
+                leadOsc.stop(now + 0.16);
+            }
+
+            if (stepIndex % 4 === 2) {
+                const bufferSize = audioCtx.sampleRate * 0.04;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                const hh = audioCtx.createBufferSource();
+                hh.buffer = buffer;
+                
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = 7000;
+
+                const hhGain = audioCtx.createGain();
+                hhGain.gain.setValueAtTime(0.12, now);
+                hhGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+                hh.connect(filter);
+                filter.connect(hhGain);
+                hhGain.connect(masterGain);
+                hh.start(now);
+                hh.stop(now + 0.045);
+            }
+
+            stepIndex++;
+        }
+
+
+        // ==========================================
+        //  THREE.JS GAME ENGINE
+        // ==========================================
+        const scene = new THREE.Scene();
+        let currentFogColor = 0x050510;
+        scene.fog = new THREE.FogExp2(currentFogColor, 0.025);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 6, 12);
+        camera.lookAt(0, 1, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        document.body.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0x00ffff, 1.2);
+        dirLight.position.set(5, 12, 7);
+        scene.add(dirLight);
+
+        // --- コース床 ---
+        const roadGeo = new THREE.PlaneGeometry(12, 100);
+        const roadMat = new THREE.MeshStandardMaterial({ 
+            color: 0x0a0e1a, 
+            roughness: 0.1,
+            metalness: 0.9
+        });
+        const road = new THREE.Mesh(roadGeo, roadMat);
+        road.rotation.x = -Math.PI / 2;
+        scene.add(road);
+
+        // 可動範囲限界線
+        const BOUNDARY_X = 4.8;
+        const lineGeo = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0.05, -50),
+            new THREE.Vector3(0, 0.05, 10)
+        ]);
+        const lineMat = new THREE.LineBasicMaterial({ color: 0x00ffcc, linewidth: 2 });
+
+        const leftLine = new THREE.Line(lineGeo, lineMat);
+        leftLine.position.x = -BOUNDARY_X;
+        scene.add(leftLine);
+
+        const rightLine = new THREE.Line(lineGeo, lineMat);
+        rightLine.position.x = BOUNDARY_X;
+        scene.add(rightLine);
+
+        // --- 飛行機 (自機: ホワイトステルス) ---
+        const airplane = new THREE.Group();
+        
+        const whiteArmorMat = new THREE.MeshStandardMaterial({ 
+            color: 0xffffff, roughness: 0.1, metalness: 0.2,
+            emissive: 0x555555, emissiveIntensity: 0.4
+        });
+        const silverChassisMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.2, metalness: 0.8 });
+        const blackTrimMat = new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.3, metalness: 0.7 });
+        const silverJetMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.2, metalness: 0.9 });
+
+        const bodyGeo = new THREE.CylinderGeometry(0.18, 0.08, 1.5, 5); 
+        bodyGeo.scale(1, 0.6, 1); 
+        const jetBody = new THREE.Mesh(bodyGeo, whiteArmorMat);
+        jetBody.rotation.x = Math.PI / 2;
+        airplane.add(jetBody);
+
+        const canopyGeo = new THREE.SphereGeometry(0.09, 16, 16);
+        canopyGeo.scale(1, 0.8, 2.5); 
+        const canopyMat = new THREE.MeshStandardMaterial({ 
+            color: 0x00ffff, roughness: 0.1, metalness: 0.9, 
+            emissive: 0x0088cc, emissiveIntensity: 0.8 
+        });
+        const canopy = new THREE.Mesh(canopyGeo, canopyMat);
+        canopy.position.set(0, 0.09, -0.2); 
+        airplane.add(canopy);
+
+        const wingShape = new THREE.Shape();
+        wingShape.moveTo(0, 0);
+        wingShape.lineTo(1.1, -0.4);   
+        wingShape.lineTo(0.9, -0.7);   
+        wingShape.lineTo(0, -0.2);     
+        
+        const extrudeSettings = { depth: 0.03, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.01, bevelThickness: 0.01 };
+        const rightWingGeo = new THREE.ExtrudeGeometry(wingShape, extrudeSettings);
+        rightWingGeo.center();
+
+        const rightWing = new THREE.Mesh(rightWingGeo, silverChassisMat);
+        rightWing.position.set(0.5, 0, 0.1);
+        airplane.add(rightWing);
+
+        const leftWing = rightWing.clone();
+        leftWing.scale.x = -1; 
+        leftWing.position.set(-0.5, 0, 0.1);
+        airplane.add(leftWing);
+
+        const wingTrimGeo = new THREE.BoxGeometry(0.5, 0.02, 0.06);
+        const rTrim = new THREE.Mesh(wingTrimGeo, blackTrimMat);
+        rTrim.position.set(0.7, 0, -0.05);
+        rTrim.rotation.y = -0.3;
+        airplane.add(rTrim);
+
+        const lTrim = rTrim.clone();
+        lTrim.position.x = -0.7;
+        lTrim.rotation.y = 0.3;
+        airplane.add(lTrim);
+
+        const tailShape = new THREE.Shape();
+        tailShape.moveTo(0, 0);
+        tailShape.lineTo(0.2, 0.35);
+        tailShape.lineTo(0.05, 0.4);
+        tailShape.lineTo(-0.05, 0.1);
+
+        const tailGeoLeft = new THREE.ExtrudeGeometry(tailShape, extrudeSettings);
+        tailGeoLeft.center();
+        const lTail = new THREE.Mesh(tailGeoLeft, whiteArmorMat);
+        lTail.position.set(-0.15, 0.15, 0.55);
+        lTail.rotation.z = -0.35; 
+        lTail.rotation.y = -0.15;
+        airplane.add(lTail);
+
+        const rTail = lTail.clone();
+        rTail.position.x = 0.15;
+        rTail.rotation.z = 0.35;
+        rTail.rotation.y = 0.15;
+        airplane.add(rTail);
+
+        const engineGeo = new THREE.CylinderGeometry(0.06, 0.08, 0.25, 8);
+        const engine = new THREE.Mesh(engineGeo, silverJetMat);
+        engine.rotation.x = Math.PI / 2;
+        engine.position.set(0, 0, 0.65);
+        airplane.add(engine);
+
+        const exhaustGeo = new THREE.ConeGeometry(0.09, 0.8, 8);
+        const exhaustMat = new THREE.MeshBasicMaterial({ 
+            color: 0xff007f, 
+            transparent: true,
+            opacity: 0.9
+        });
+        const boosterFlame = new THREE.Mesh(exhaustGeo, exhaustMat);
+        boosterFlame.rotation.x = -Math.PI / 2;
+        boosterFlame.position.set(0, 0, 1.15); 
+        airplane.add(boosterFlame);
+
+        const shieldBubbleGeo = new THREE.SphereGeometry(1.4, 16, 16);
+        const shieldBubbleMat = new THREE.MeshBasicMaterial({
+            color: 0x00dfff,
+            transparent: true,
+            opacity: 0.25,
+            wireframe: true
+        });
+        const shieldBubble = new THREE.Mesh(shieldBubbleGeo, shieldBubbleMat);
+        shieldBubble.visible = false;
+        airplane.add(shieldBubble);
+
+        const hitBoxGeo = new THREE.BoxGeometry(0.25, 0.2, 0.7);
+        const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false });
+        const playerHitBox = new THREE.Mesh(hitBoxGeo, hitBoxMat);
+        airplane.add(playerHitBox);
+
+        airplane.position.set(0, 0.6, 4);
+        scene.add(airplane);
+
+        // --- ロケット ---
+        const obstacles = [];
+
+        function createRocket(type = 'blue') {
+            const rocket = new THREE.Group();
+            let bodyColor, emissiveColor, flameColor;
+
+            if (type === 'red') {
+                bodyColor = 0xff0033;
+                emissiveColor = 0xff0000;
+                flameColor = 0xffaa00;
+            } else if (type === 'green') {
+                bodyColor = 0x00ff66;
+                emissiveColor = 0x00ff00;
+                flameColor = 0xadff2f;
+            } else if (type === 'yellow') {
+                // ★黄色ロケット
+                bodyColor = 0xffff00;
+                emissiveColor = 0xaa8800;
+                flameColor = 0xff5500;
+            } else {
+                bodyColor = 0x0088ff;
+                emissiveColor = 0x0044ff;
+                flameColor = 0x00ffff;
+            }
+
+            const bodyMat = new THREE.MeshStandardMaterial({ 
+                color: bodyColor, roughness: 0.3, metalness: 0.7,
+                emissive: emissiveColor, emissiveIntensity: 0.2
+            });
+            const whiteMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, metalness: 0.5 });
+
+            const rBodyGeo = new THREE.CylinderGeometry(0.18, 0.18, 1.0, 8);
+            const rBody = new THREE.Mesh(rBodyGeo, bodyMat);
+            rBody.rotation.x = Math.PI / 2;
+            rocket.add(rBody);
+
+            const rConeGeo = new THREE.ConeGeometry(0.18, 0.4, 8);
+            const rCone = new THREE.Mesh(rConeGeo, whiteMat);
+            rCone.position.set(0, 0, 0.7);
+            rCone.rotation.x = Math.PI / 2;
+            rocket.add(rCone);
+
+            const finGeo = new THREE.BoxGeometry(0.6, 0.05, 0.2);
+            const fin1 = new THREE.Mesh(finGeo, whiteMat);
+            fin1.position.set(0, 0, -0.4);
+            rocket.add(fin1);
+
+            const flameGeo = new THREE.ConeGeometry(0.12, 0.5, 8);
+            const flameMat = new THREE.MeshBasicMaterial({ color: flameColor });
+            const flame = new THREE.Mesh(flameGeo, flameMat);
+            flame.position.set(0, 0, -0.75);
+            flame.rotation.x = -Math.PI / 2;
+            rocket.add(flame);
+
+            const rocketHitBoxGeo = new THREE.BoxGeometry(0.25, 0.25, 0.7);
+            const rocketHitBox = new THREE.Mesh(rocketHitBoxGeo, new THREE.MeshBasicMaterial({ visible: false }));
+            rocket.add(rocketHitBox);
+
+            let rotY = 0;
+            let speedMultiplier = 1.0;
+            let moveX = 0;
+
+            if (type === 'red') {
+                speedMultiplier = 1.3;
+            } else if (type === 'green') {
+                speedMultiplier = 1.0; 
+                rotY = -0.4;            
+                moveX = -0.06;         
+            } else if (type === 'yellow') {
+                // ★黄色ロケットは「左(-側)」から「右(+側)」に向けて突っ込んでくる
+                speedMultiplier = 1.0; 
+                rotY = 0.4; // 逆向きの角度
+                moveX = 0.06; // プラス方向に進む
+            }
+
+            rocket.rotation.y = rotY;
+
+            rocket.userData = {
+                type: type,
+                speedMultiplier: speedMultiplier,
+                moveX: moveX,
+                hasSteered: false, 
+                hitBox: rocketHitBox
+            };
+
+            return rocket;
+        }
+
+        function spawnObstacle(type = 'blue') {
+            const rocket = createRocket(type);
+            if (type === 'green') {
+                rocket.position.set(4.0 + Math.random() * 2.0, 0.6, -35);
+            } else if (type === 'yellow') {
+                // ★黄色は左奥（X軸マイナス側）から発生
+                rocket.position.set(-4.0 - Math.random() * 2.0, 0.6, -35);
+            } else {
+                rocket.position.set((Math.random() - 0.5) * 10, 0.6, -25);
+            }
+            scene.add(rocket);
+            obstacles.push(rocket);
+        }
+
+        // --- 巨大隕石 ---
+        const meteors = [];
+        const meteorMat = new THREE.MeshStandardMaterial({ 
+            color: 0x662211, roughness: 0.8, 
+            emissive: 0xff3300, emissiveIntensity: 0.4 
+        });
+
+        function spawnMeteor() {
+            const meteorGroup = new THREE.Group();
+            const meteorGeo = new THREE.DodecahedronGeometry(1.5, 1);
+            const meteor = new THREE.Mesh(meteorGeo, meteorMat);
+            meteorGroup.add(meteor);
+
+            const meteorHitBoxGeo = new THREE.SphereGeometry(1.0, 8, 8);
+            const meteorHitBox = new THREE.Mesh(meteorHitBoxGeo, new THREE.MeshBasicMaterial({ visible: false }));
+            meteorGroup.add(meteorHitBox);
+
+            meteorGroup.position.set((Math.random() - 0.5) * 8, 1.5, -30);
+            meteorGroup.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+
+            meteorGroup.userData = { mesh: meteor, hitBox: meteorHitBox };
+            scene.add(meteorGroup);
+            meteors.push(meteorGroup);
+        }
+
+        // --- 発光コイン ---
+        const coins = [];
+        const coinGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.08, 16);
+        const coinMat = new THREE.MeshStandardMaterial({ 
+            color: 0xffff00, emissive: 0xffaa00, emissiveIntensity: 0.9,
+            metalness: 0.8, roughness: 0.1 
+        });
+        const ringGeo = new THREE.RingGeometry(0.35, 0.42, 16);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+
+        function spawnCoin() {
+            const coinGroup = new THREE.Group();
+            const coinMesh = new THREE.Mesh(coinGeo, coinMat);
+            coinMesh.rotation.x = Math.PI / 2;
+            coinGroup.add(coinMesh);
+
+            const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+            coinGroup.add(ringMesh);
+
+            const coinHitBoxGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+            const coinHitBox = new THREE.Mesh(coinHitBoxGeo, new THREE.MeshBasicMaterial({ visible: false }));
+            coinGroup.add(coinHitBox);
+
+            coinGroup.position.set((Math.random() - 0.5) * 10, 0.6, -25);
+            coinGroup.userData = { hitBox: coinHitBox };
+
+            scene.add(coinGroup);
+            coins.push(coinGroup);
+        }
+
+        // --- シールドアイテム ---
+        const shields = [];
+        const shieldGeo = new THREE.SphereGeometry(0.35, 16, 16);
+        const shieldMat = new THREE.MeshStandardMaterial({
+            color: 0x00dfff, emissive: 0x0088ff, emissiveIntensity: 1.0,
+            metalness: 0.9, roughness: 0.1
+        });
+
+        function spawnShieldItem() {
+            const group = new THREE.Group();
+            const mesh = new THREE.Mesh(shieldGeo, shieldMat);
+            group.add(mesh);
+
+            const rGeo = new THREE.RingGeometry(0.4, 0.48, 16);
+            const rMat = new THREE.MeshBasicMaterial({ color: 0x00dfff, side: THREE.DoubleSide });
+            const ring = new THREE.Mesh(rGeo, rMat);
+            ring.rotation.x = Math.PI / 2;
+            group.add(ring);
+
+            const hitBox = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), new THREE.MeshBasicMaterial({ visible: false }));
+            group.add(hitBox);
+
+            group.position.set((Math.random() - 0.5) * 10, 0.6, -25);
+            group.userData = { hitBox: hitBox };
+
+            scene.add(group);
+            shields.push(group);
+        }
+
+        // --- ワープリング ---
+        const warpRings = [];
+        const ringTorusGeo = new THREE.TorusGeometry(1.5, 0.12, 8, 24);
+        const ringTorusMat = new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true });
+
+        function spawnWarpRing() {
+            const group = new THREE.Group();
+            const ring = new THREE.Mesh(ringTorusGeo, ringTorusMat);
+            group.add(ring);
+
+            const gateGeo = new THREE.CylinderGeometry(1.4, 1.4, 0.05, 16);
+            const gateMat = new THREE.MeshBasicMaterial({
+                color: 0xff00ff, transparent: true, opacity: 0.2, side: THREE.DoubleSide
+            });
+            const gate = new THREE.Mesh(gateGeo, gateMat);
+            gate.rotation.x = Math.PI / 2;
+            group.add(gate);
+
+            const hitBox = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.8, 0.5), new THREE.MeshBasicMaterial({ visible: false }));
+            group.add(hitBox);
+
+            group.position.set((Math.random() - 0.5) * 6, 1.0, -35);
+            group.userData = { hitBox: hitBox };
+
+            scene.add(group);
+            warpRings.push(group);
+        }
+
+
+        // ==========================================
+        //  青UFO ＆ プラズマミニ弾
+        // ==========================================
+        let ufoActive = false;
+        let ufoMesh = null;
+        let lastUfoSpawnScore = 0; 
+        
+        const ufoProjectiles = []; 
+
+        function createUFOMesh() {
+            const ufoGroup = new THREE.Group();
+            
+            const discGeo = new THREE.CylinderGeometry(2.2, 2.5, 0.5, 16);
+            discGeo.scale(1, 0.6, 1);
+            const discMat = new THREE.MeshStandardMaterial({ 
+                color: 0x2b2b36, roughness: 0.3, metalness: 0.9,
+                emissive: 0x110022, emissiveIntensity: 0.5
+            });
+            const disc = new THREE.Mesh(discGeo, discMat);
+            ufoGroup.add(disc);
+
+            const domeGeo = new THREE.SphereGeometry(1.0, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+            const domeMat = new THREE.MeshStandardMaterial({
+                color: 0xff0055, roughness: 0.1, metalness: 0.9,
+                emissive: 0x990022, emissiveIntensity: 1.0
+            });
+            const dome = new THREE.Mesh(domeGeo, domeMat);
+            dome.position.y = 0.15;
+            ufoGroup.add(dome);
+
+            const reactorGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.1, 12);
+            const reactorMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
+            const reactor = new THREE.Mesh(reactorGeo, reactorMat);
+            reactor.position.y = -0.25;
+            ufoGroup.add(reactor);
+
+            const lightGeo = new THREE.SphereGeometry(0.15, 8, 8);
+            const lightMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc });
+            for(let i = 0; i < 6; i++) {
+                const l = new THREE.Mesh(lightGeo, lightMat);
+                const angle = (i / 6) * Math.PI * 2;
+                l.position.set(Math.cos(angle) * 2.1, -0.1, Math.sin(angle) * 2.1);
+                ufoGroup.add(l);
+            }
+
+            ufoGroup.position.set(-15, 3.5, -15); 
+
+            return ufoGroup;
+        }
+
+        const projectileGeo = new THREE.SphereGeometry(0.12, 8, 8);
+        const projectileMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+
+        function spawnUFOProjectile(startX, startY, startZ) {
+            const sphere = new THREE.Mesh(projectileGeo, projectileMat);
+            sphere.position.set(startX, startY - 0.4, startZ);
+
+            const dx = airplane.position.x - startX;
+            const dy = airplane.position.y - startY;
+            const dz = airplane.position.z - startZ;
+            const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+            const bulletSpeed = 0.22; 
+            const velX = (dx / distance) * bulletSpeed;
+            const velY = (dy / distance) * bulletSpeed;
+            const velZ = (dz / distance) * bulletSpeed;
+
+            const bHitBox = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), new THREE.MeshBasicMaterial({ visible: false }));
+            sphere.add(bHitBox);
+
+            sphere.userData = {
+                velX: velX,
+                velY: velY,
+                velZ: velZ,
+                hitBox: bHitBox
+            };
+
+            scene.add(sphere);
+            ufoProjectiles.push(sphere);
+        }
+
+        function triggerUFOBoss() {
+            if (ufoActive) return;
+            ufoActive = true;
+            document.getElementById('ufo-warning').style.display = 'block';
+            
+            playSE('siren');
+
+            setTimeout(() => {
+                document.getElementById('ufo-warning').style.display = 'none';
+            }, 3000);
+
+            ufoMesh = createUFOMesh();
+            const fromLeft = Math.random() < 0.5;
+            ufoMesh.position.set(fromLeft ? -15 : 15, 3.5, -20);
+            ufoMesh.userData = {
+                dirX: fromLeft ? 0.08 : -0.08, 
+                lastShootFrame: 0
+            };
+            scene.add(ufoMesh);
+        }
+
+
+        // ==========================================
+        //  赤いUFO ＆ ゴン太レーザー
+        // ==========================================
+        let redUfoActive = false;
+        let redUfoMesh = null;
+        let lastRedUfoSpawnScore = 0; 
+        
+        let redUfoState = 'NONE'; 
+        let redUfoTimer = 0;       
+        let redUfoTargetX = 0;     
+
+        let laserWarningMesh = null; 
+        let laserBeamMesh = null;    
+        let laserHitBox = null;      
+
+        function createRedUFOMesh() {
+            const ufoGroup = new THREE.Group();
+            
+            const discGeo = new THREE.CylinderGeometry(1.4, 1.6, 0.45, 16);
+            const discMat = new THREE.MeshStandardMaterial({ 
+                color: 0xff1122, roughness: 0.2, metalness: 0.9,
+                emissive: 0x550000, emissiveIntensity: 0.5
+            });
+            const disc = new THREE.Mesh(discGeo, discMat);
+            ufoGroup.add(disc);
+
+            const domeGeo = new THREE.SphereGeometry(0.7, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+            const domeMat = new THREE.MeshStandardMaterial({
+                color: 0x111115, roughness: 0.1, metalness: 0.9
+            });
+            const dome = new THREE.Mesh(domeGeo, domeMat);
+            dome.position.y = 0.15;
+            ufoGroup.add(dome);
+
+            const cannonGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 12);
+            const cannonMat = new THREE.MeshStandardMaterial({ color: 0x33333d, metalness: 0.9, roughness: 0.1 });
+            const cannon = new THREE.Mesh(cannonGeo, cannonMat);
+            cannon.position.y = -0.25;
+            ufoGroup.add(cannon);
+
+            const lightGeo = new THREE.SphereGeometry(0.1, 8, 8);
+            const lightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            for(let i = 0; i < 8; i++) {
+                const l = new THREE.Mesh(lightGeo, lightMat);
+                const angle = (i / 8) * Math.PI * 2;
+                l.position.set(Math.cos(angle) * 1.45, -0.05, Math.sin(angle) * 1.45);
+                ufoGroup.add(l);
+            }
+
+            ufoGroup.position.set(0, 8.0, -15); 
+            return ufoGroup;
+        }
+
+        function setupLaserObjects(ufoX) {
+            const warningGeo = new THREE.CylinderGeometry(1.5, 1.5, 50, 16);
+            const warningMat = new THREE.MeshBasicMaterial({
+                color: 0xff0000,
+                transparent: true,
+                opacity: 0.0, 
+                side: THREE.DoubleSide
+            });
+            laserWarningMesh = new THREE.Mesh(warningGeo, warningMat);
+            laserWarningMesh.rotation.x = Math.PI / 2;
+            laserWarningMesh.position.set(ufoX, 0.6, -10); 
+            scene.add(laserWarningMesh);
+
+            laserBeamMesh = new THREE.Group();
+            
+            const innerGeo = new THREE.CylinderGeometry(1.2, 1.2, 50, 16);
+            const innerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const innerBeam = new THREE.Mesh(innerGeo, innerMat);
+            innerBeam.rotation.x = Math.PI / 2;
+            laserBeamMesh.add(innerBeam);
+
+            const outerGeo = new THREE.CylinderGeometry(1.6, 1.6, 50, 16);
+            const outerMat = new THREE.MeshBasicMaterial({ color: 0xff0033, transparent: true, opacity: 0.75 });
+            const outerBeam = new THREE.Mesh(outerGeo, outerMat);
+            outerBeam.rotation.x = Math.PI / 2;
+            laserBeamMesh.add(outerBeam);
+
+            laserBeamMesh.position.set(ufoX, 0.6, -10);
+            laserBeamMesh.visible = false;
+            scene.add(laserBeamMesh);
+
+            laserHitBox = new THREE.Mesh(
+                new THREE.BoxGeometry(3.0, 5.0, 50),
+                new THREE.MeshBasicMaterial({ visible: false })
+            );
+            laserHitBox.position.set(ufoX, 0.6, -10);
+            scene.add(laserHitBox);
+        }
+
+        function triggerRedUFOBoss() {
+            if (redUfoActive) return;
+            redUfoActive = true;
+            redUfoState = 'SPAWNING';
+            redUfoTimer = 0;
+
+            playSE('siren');
+
+            redUfoTargetX = (Math.random() - 0.5) * 6.5; 
+
+            redUfoMesh = createRedUFOMesh();
+            redUfoMesh.position.set(redUfoTargetX, 9.0, -10);
+            scene.add(redUfoMesh);
+
+            setupLaserObjects(redUfoTargetX);
+        }
+
+        function cleanRedUfoObjects() {
+            if (redUfoMesh) {
+                scene.remove(redUfoMesh);
+                redUfoMesh = null;
+            }
+            if (laserWarningMesh) {
+                scene.remove(laserWarningMesh);
+                laserWarningMesh = null;
+            }
+            if (laserBeamMesh) {
+                scene.remove(laserBeamMesh);
+                laserBeamMesh = null;
+            }
+            if (laserHitBox) {
+                scene.remove(laserHitBox);
+                laserHitBox = null;
+            }
+            redUfoActive = false;
+            redUfoState = 'NONE';
+            document.getElementById('laser-warning-ui').style.display = 'none';
+        }
+
+
+        // --- ゲーム状態管理 ---
+        let gameState = 'START';
+        let moveLeft = false;
+        let moveRight = false;
+        let score = 0;
+        let obstacleSpeed = 0.25;
+        let frameCount = 0;
+
+        let startTime = 0;
+        let lastScoreTime = 0;
+        let lastCoinCheckTime = 0;
+        let nextMeteorTime = 0;
+
+        let countdownTaps = 0;
+        let isSecretActive = false;
+
+        // ★蓄積型シールドシステム
+        let shieldCount = 0; // シールドストック数
+        let isInvincibleFlash = false; // 被弾後の点滅無敵中フラグ
+        
+        let warpTimeLeft = 0;  
+
+        // LEVEL UP 管理 (1分毎)
+        let levelCount = 0;
+        let nextLevelTime = 60; 
+        let scoreMultiplier = 1.0; 
+        let spawnRateMultiplier = 1.0; 
+        let speedMultiplier = 1.0; 
+
+        const SECTOR_COLORS = [
+            { bg: 0x050510, light: 0x00ffff }, 
+            { bg: 0x150020, light: 0xff00ff }, 
+            { bg: 0x001a15, light: 0x00ff88 }, 
+            { bg: 0x200a00, light: 0xffaa00 }, 
+            { bg: 0x1e0000, light: 0xff0033 }  
+        ];
+
+        const startScreen = document.getElementById('start-screen');
+        const countdownEl = document.getElementById('countdown');
+        const secretNoticeEl = document.getElementById('secret-notice');
+        const levelupNoticeEl = document.getElementById('levelup-notice');
+        const levelupSubText = document.getElementById('levelup-sub-text');
+        const infoEl = document.getElementById('info');
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+        const shieldBadge = document.getElementById('shield-badge');
+
+        startScreen.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            initAudio();
+            startSequence();
+        });
+
+        function startSequence() {
+            if (gameState !== 'START') return;
+            startScreen.style.display = 'none';
+            infoEl.style.display = 'block';
+            btnLeft.style.display = 'flex';
+            btnRight.style.display = 'flex';
+            
+            runCountdown();
+        }
+
+        // シールドUIの更新関数
+        function updateShieldUI() {
+            if (shieldCount > 0) {
+                shieldBadge.innerText = `SHIELD ACTIVE [x${shieldCount}]`;
+                shieldBadge.style.display = "block";
+                shieldBubble.visible = true;
+            } else {
+                shieldBadge.style.display = "none";
+                shieldBubble.visible = false;
+            }
+        }
+
+        function runCountdown() {
+            gameState = 'COUNTDOWN';
+            countdownTaps = 0;
+            isSecretActive = false;
+            
+            // シールドストックのリセット
+            shieldCount = 0;
+            isInvincibleFlash = false;
+            updateShieldUI();
+
+            warpTimeLeft = 0;
+            document.getElementById('ufo-warning').style.display = "none";
+            document.getElementById('laser-warning-ui').style.display = "none";
+            
+            levelCount = 0;
+            nextLevelTime = 60; 
+            scoreMultiplier = 1.0;
+            spawnRateMultiplier = 1.0;
+            speedMultiplier = 1.0;
+
+            ufoActive = false;
+            lastUfoSpawnScore = 0;
+            if (ufoMesh) {
+                scene.remove(ufoMesh);
+                ufoMesh = null;
+            }
+            ufoProjectiles.forEach(p => scene.remove(p));
+            ufoProjectiles.length = 0;
+
+            lastRedUfoSpawnScore = 0;
+            cleanRedUfoObjects();
+
+            changeSectorVisuals(0);
+
+            countdownEl.style.display = 'block';
+            secretNoticeEl.style.display = 'none';
+            levelupNoticeEl.style.display = 'none';
+
+            let count = 3;
+            countdownEl.innerText = count;
+
+            const timer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownEl.innerText = count;
+                } else if (count === 0) {
+                    countdownEl.innerText = 'START!';
+                } else {
+                    clearInterval(timer);
+                    countdownEl.style.display = 'none';
+                    secretNoticeEl.style.display = 'none';
+                    gameState = 'PLAYING';
+                    
+                    const now = Date.now();
+                    startTime = now;
+                    lastScoreTime = now;
+                    lastCoinCheckTime = now;
+                    nextMeteorTime = now + 180000;
+                }
+            }, 1000);
+        }
+
+        window.addEventListener('pointerdown', (e) => {
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if (gameState === 'GAMEOVER') {
+                resetGame();
+                return;
+            }
+            
+            if (gameState === 'COUNTDOWN') {
+                countdownTaps++;
+                if (countdownTaps >= 5 && !isSecretActive) {
+                    isSecretActive = true;
+                    secretNoticeEl.style.display = 'block';
+                }
+            }
+        });
+
+        const bindButton = (btn, setIsMoving) => {
+            const start = (e) => { e.preventDefault(); e.stopPropagation(); setIsMoving(true); btn.classList.add('active'); };
+            const end = (e) => { 
+                e.preventDefault(); 
+                e.stopPropagation();
+                setIsMoving(false); 
+                btn.classList.remove('active'); 
+                btn.classList.remove('limit-warning');
+            };
+            btn.addEventListener('pointerdown', start);
+            btn.addEventListener('pointerup', end);
+            btn.addEventListener('pointerleave', end);
+        };
+
+        bindButton(btnLeft, (val) => moveLeft = val);
+        bindButton(btnRight, (val) => moveRight = val);
+
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowLeft') moveLeft = true;
+            if(e.key === 'ArrowRight') moveRight = true;
+            if(e.key === ' ' && gameState === 'GAMEOVER') resetGame();
+        });
+        window.addEventListener('keyup', (e) => {
+            if(e.key === 'ArrowLeft') { moveLeft = false; btnLeft.classList.remove('limit-warning'); }
+            if(e.key === 'ArrowRight') { moveRight = false; btnRight.classList.remove('limit-warning'); }
+        });
+
+        function checkCollision(mesh1, mesh2) {
+            const box1 = new THREE.Box3().setFromObject(mesh1);
+            const box2 = new THREE.Box3().setFromObject(mesh2);
+            return box1.intersectsBox(box2);
+        }
+
+        function changeSectorVisuals(index) {
+            const colorData = SECTOR_COLORS[Math.min(index, SECTOR_COLORS.length - 1)];
+            renderer.setClearColor(colorData.bg);
+            scene.fog.color.setHex(colorData.bg);
+            dirLight.color.setHex(colorData.light);
+        }
+
+        function triggerLevelUp(elapsedTime) {
+            levelCount++;
+            nextLevelTime = (levelCount + 1) * 60; 
+
+            scoreMultiplier += 0.01;
+            let subMessage = "SCORE RATE +1%";
+
+            if (levelCount % 2 === 1) {
+                spawnRateMultiplier += 0.01;
+                subMessage += " & SPAWN RATE +1%";
+            } else {
+                speedMultiplier += 0.01;
+                subMessage += " & SPEED +1%";
+            }
+
+            changeSectorVisuals(levelCount);
+            subMessage += ` (SECTOR ${levelCount + 1} ENTERED)`;
+
+            playSE('shield-get');
+
+            levelupNoticeEl.style.display = 'none';
+            void levelupNoticeEl.offsetWidth; 
+            levelupNoticeEl.style.display = 'block';
+        }
+
+        // 被弾した時の蓄積型ライフ判定
+        function handlePlayerHit() {
+            // 無敵点滅中ならダメージ無効
+            if (isInvincibleFlash) return;
+
+            if (shieldCount > 0) {
+                shieldCount--;
+                updateShieldUI();
+                
+                playSE('shield-break');
+
+                // 被弾後の一時無敵（点滅）
+                isInvincibleFlash = true;
+                let flashCount = 0;
+                const flashTimer = setInterval(() => {
+                    jetBody.visible = !jetBody.visible;
+                    flashCount++;
+                    if (flashCount >= 10) {
+                        clearInterval(flashTimer);
+                        jetBody.visible = true;
+                        isInvincibleFlash = false;
+                    }
+                }, 100);
+                return; 
+            }
+
+            // シールドがない場合は即時終了
+            playSE('gameover');
+
+            gameState = 'GAMEOVER';
+            document.getElementById('gameover').style.display = 'block';
+        }
+
+        function resetGame() {
+            obstacles.forEach(obs => scene.remove(obs)); obstacles.length = 0;
+            coins.forEach(coin => scene.remove(coin)); coins.length = 0;
+            meteors.forEach(m => scene.remove(m)); meteors.length = 0;
+            shields.forEach(s => scene.remove(s)); shields.length = 0;
+            warpRings.forEach(w => scene.remove(w)); warpRings.length = 0;
+
+            airplane.position.x = 0;
+            airplane.rotation.z = 0;
+            score = 0;
+            obstacleSpeed = 0.25;
+
+            btnLeft.classList.remove('limit-warning');
+            btnRight.classList.remove('limit-warning');
+
+            document.getElementById('score').innerText = Math.floor(score);
+            document.getElementById('gameover').style.display = 'none';
+
+            runCountdown();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameState === 'PLAYING') {
+                frameCount++;
+                const now = Date.now();
+                const elapsedTime = (now - startTime) / 1000;
+
+                let currentWarpSpeedMult = 1.0;
+                if (warpTimeLeft > 0) {
+                    warpTimeLeft--;
+                    currentWarpSpeedMult = 3.5; 
+                    score += 5 * scoreMultiplier; 
+                    document.getElementById('score').innerText = Math.floor(score);
+                }
+
+                if (elapsedTime >= nextLevelTime) {
+                    triggerLevelUp(elapsedTime);
+                }
+
+                if (now - lastScoreTime >= 100) {
+                    const baseScoreAdd = isSecretActive ? 5 : 1;
+                    const warpMult = warpTimeLeft > 0 ? 3 : 1;
+                    score += baseScoreAdd * scoreMultiplier * warpMult;
+                    document.getElementById('score').innerText = Math.floor(score);
+                    lastScoreTime = now;
+                }
+
+                const scoreThreshold = Math.floor(score / 3000) * 3000;
+                if (ufoThreshold = scoreThreshold) {
+                    if (ufoThreshold > 0 && ufoThreshold > lastUfoSpawnScore && !ufoActive) {
+                        lastUfoSpawnScore = ufoThreshold;
+                        triggerUFOBoss();
+                    }
+                }
+
+                const redUfoThreshold = Math.floor(score / 5000) * 5000;
+                if (redUfoThreshold > 0 && redUfoThreshold > lastRedUfoSpawnScore && !redUfoActive) {
+                    lastRedUfoSpawnScore = redUfoThreshold;
+                    triggerRedUFOBoss();
+                }
+
+                const coinInterval = isSecretActive ? 600 : 3000;
+                if (now - lastCoinCheckTime >= coinInterval) {
+                    if (Math.random() < 0.33) spawnCoin();
+                    if (Math.random() < 0.12) spawnShieldItem(); // 蓄積型なので常に出現
+                    if (warpTimeLeft === 0 && Math.random() < 0.15) spawnWarpRing();
+                    
+                    lastCoinCheckTime = now;
+                }
+
+                if (elapsedTime >= 180 && now >= nextMeteorTime) {
+                    spawnMeteor();
+                    nextMeteorTime = now + (5000 + Math.random() * 5000);
+                }
+
+                let targetRotationZ = 0;
+                if (moveLeft) {
+                    if (airplane.position.x > -BOUNDARY_X) {
+                        airplane.position.x -= 0.126;
+                        targetRotationZ = 0.3;
+                        btnLeft.classList.remove('limit-warning');
+                    } else {
+                        btnLeft.classList.add('limit-warning');
+                    }
+                } else {
+                    btnLeft.classList.remove('limit-warning');
+                }
+
+                if (moveRight) {
+                    if (airplane.position.x < BOUNDARY_X) {
+                        airplane.position.x += 0.126;
+                        targetRotationZ = -0.3;
+                        btnRight.classList.remove('limit-warning');
+                    } else {
+                        btnRight.classList.add('limit-warning');
+                    }
+                } else {
+                    btnRight.classList.remove('limit-warning');
+                }
+
+                airplane.rotation.z += (targetRotationZ - airplane.rotation.z) * 0.1;
+
+                const warpSize = warpTimeLeft > 0 ? 2.5 : 1.0;
+                boosterFlame.scale.set(
+                    (1 + Math.sin(frameCount * 0.5) * 0.05) * warpSize,
+                    (1 + Math.cos(frameCount * 0.5) * 0.1) * warpSize,
+                    (1 + Math.sin(frameCount * 0.3) * 0.05) * warpSize
+                );
+
+                if (shieldCount > 0) {
+                    shieldBubble.rotation.y += 0.02;
+                    shieldBubble.rotation.x += 0.01;
+                }
+
+                const baseCheckRate = isSecretActive ? 4 : 20;
+                const effectiveCheckRate = Math.max(1, Math.floor(baseCheckRate / spawnRateMultiplier));
+                
+                if (frameCount % effectiveCheckRate === 0) {
+                    if (Math.random() < 0.70) {
+                        // ★10,000ポイントを超えたら「黄色ロケット」を追加
+                        if (score >= 10000 && Math.random() < 0.20) {
+                            spawnObstacle('yellow');
+                        } else if (elapsedTime >= 60 && Math.random() < 0.28) {
+                            spawnObstacle('green');
+                        } else {
+                            const isRed = elapsedTime >= 30 && Math.random() < 0.30;
+                            spawnObstacle(isRed ? 'red' : 'blue');
+                        }
+                    }
+                }
+
+                if (ufoActive && ufoMesh) {
+                    ufoMesh.position.x += ufoMesh.userData.dirX;
+                    ufoMesh.rotation.y += 0.03; 
+
+                    if (frameCount - ufoMesh.userData.lastShootFrame >= 12) {
+                        if (ufoMesh.position.x > -10 && ufoMesh.position.x < 10) {
+                            spawnUFOProjectile(ufoMesh.position.x, ufoMesh.position.y, ufoMesh.position.z);
+                            playSE('laser');
+                        }
+                        ufoMesh.userData.lastShootFrame = frameCount;
+                    }
+
+                    if (ufoMesh.position.x > 18 || ufoMesh.position.x < -18) {
+                        scene.remove(ufoMesh);
+                        ufoMesh = null;
+                        ufoActive = false;
+                    }
+                }
+
+
+                // ==========================================
+                //  赤UFO ＆ ゴン太レーザー処理
+                // ==========================================
+                if (redUfoActive && redUfoMesh) {
+                    redUfoTimer++;
+
+                    if (redUfoState === 'SPAWNING') {
+                        redUfoMesh.position.y += (4.5 - redUfoMesh.position.y) * 0.05;
+                        redUfoMesh.rotation.y += 0.01;
+
+                        if (Math.abs(redUfoMesh.position.y - 4.5) < 0.05) {
+                            redUfoState = 'WARNING';
+                            redUfoTimer = 0;
+                            document.getElementById('laser-warning-ui').style.display = 'block';
+                        }
+                    } 
+                    else if (redUfoState === 'WARNING') {
+                        redUfoMesh.rotation.y += 0.05; 
+
+                        if (laserWarningMesh) {
+                            laserWarningMesh.material.opacity = Math.abs(Math.sin(redUfoTimer * 0.15)) * 0.4;
+                        }
+
+                        if (redUfoTimer >= 120) {
+                            redUfoState = 'FIRING';
+                            redUfoTimer = 0;
+                            document.getElementById('laser-warning-ui').style.display = 'none';
+
+                            if (laserWarningMesh) laserWarningMesh.material.opacity = 0;
+                            if (laserBeamMesh) laserBeamMesh.visible = true;
+
+                            playSE('gigalaser');
+                        }
+                    } 
+                    else if (redUfoState === 'FIRING') {
+                        redUfoMesh.rotation.y += 0.15; 
+
+                        if (warpTimeLeft === 0 && !isInvincibleFlash && laserHitBox && checkCollision(playerHitBox, laserHitBox)) {
+                            handlePlayerHit();
+                        }
+
+                        if (laserBeamMesh) {
+                            laserBeamMesh.scale.x = 1.0 + Math.sin(redUfoTimer * 0.8) * 0.08;
+                        }
+
+                        if (redUfoTimer >= 300) {
+                            redUfoState = 'LEAVING';
+                            redUfoTimer = 0;
+                            if (laserBeamMesh) laserBeamMesh.visible = false;
+                        }
+                    } 
+                    else if (redUfoState === 'LEAVING') {
+                        redUfoMesh.position.y += 0.1;
+                        redUfoMesh.rotation.y += 0.01;
+
+                        if (redUfoMesh.position.y > 10.0) {
+                            cleanRedUfoObjects();
+                        }
+                    }
+                }
+
+
+                // --- 各種弾・障害物の移動と判定 ---
+                for (let i = ufoProjectiles.length - 1; i >= 0; i--) {
+                    const p = ufoProjectiles[i];
+                    p.position.x += p.userData.velX * currentWarpSpeedMult;
+                    p.position.y += p.userData.velY * currentWarpSpeedMult;
+                    p.position.z += p.userData.velZ * currentWarpSpeedMult;
+
+                    if(p.position.y < 0.6) p.position.y = 0.6; 
+
+                    if (warpTimeLeft === 0 && !isInvincibleFlash && checkCollision(playerHitBox, p.userData.hitBox)) {
+                        scene.remove(p);
+                        ufoProjectiles.splice(i, 1);
+                        handlePlayerHit();
+                        continue;
+                    }
+
+                    if (p.position.z > 12) {
+                        scene.remove(p);
+                        ufoProjectiles.splice(i, 1);
+                    }
+                }
+
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    const obs = obstacles[i];
+                    const currentSpeed = obstacleSpeed * obs.userData.speedMultiplier * speedMultiplier * currentWarpSpeedMult;
+                    
+                    obs.position.z += currentSpeed;
+                    
+                    // ★緑ロケット ＆ 黄色ロケットの急旋回直進ギミック★
+                    if (obs.userData.type === 'green' || obs.userData.type === 'yellow') {
+                        if (obs.position.z >= -10 && !obs.userData.hasSteered) {
+                            obs.userData.moveX = 0;          
+                            obs.rotation.y = 0;              
+                            obs.userData.hasSteered = true;  
+                        }
+                    }
+
+                    if (obs.userData.moveX !== 0) {
+                        obs.position.x += obs.userData.moveX * speedMultiplier * currentWarpSpeedMult;
+                    }
+                    
+                    obs.rotation.z += 0.05;
+
+                    if (warpTimeLeft === 0 && !isInvincibleFlash && checkCollision(playerHitBox, obs.userData.hitBox)) {
+                        scene.remove(obs);
+                        obstacles.splice(i, 1);
+                        handlePlayerHit();
+                        continue;
+                    }
+
+                    if (obs.position.z > 8 || obs.position.x < -10 || obs.position.x > 10) {
+                        scene.remove(obs);
+                        obstacles.splice(i, 1);
+                    }
+                }
+
+                const meteorSpeed = obstacleSpeed * 0.3 * speedMultiplier * currentWarpSpeedMult;
+                for (let i = meteors.length - 1; i >= 0; i--) {
+                    const meteorGroup = meteors[i];
+                    meteorGroup.position.z += meteorSpeed;
+                    meteorGroup.userData.mesh.rotation.x += 0.01;
+                    meteorGroup.userData.mesh.rotation.y += 0.01;
+
+                    if (warpTimeLeft === 0 && !isInvincibleFlash && checkCollision(playerHitBox, meteorGroup.userData.hitBox)) {
+                        scene.remove(meteorGroup);
+                        meteors.splice(i, 1);
+                        handlePlayerHit();
+                        continue;
+                    }
+
+                    if (meteorGroup.position.z > 10) {
+                        scene.remove(meteorGroup);
+                        meteors.splice(i, 1);
+                    }
+                }
+
+                for (let i = coins.length - 1; i >= 0; i--) {
+                    const coinGroup = coins[i];
+                    coinGroup.position.z += obstacleSpeed * currentWarpSpeedMult;
+                    coinGroup.rotation.y += 0.08;
+
+                    if (checkCollision(playerHitBox, coinGroup.userData.hitBox)) {
+                        const baseBonus = (elapsedTime / 30) * 100;
+                        const coinAdd = isSecretActive ? (baseBonus * 5) : baseBonus;
+                        score += coinAdd * scoreMultiplier;
+                        document.getElementById('score').innerText = Math.floor(score);
+
+                        playSE('coin');
+
+                        scene.remove(coinGroup);
+                        coins.splice(i, 1);
+                    } else if (coinGroup.position.z > 8) {
+                        scene.remove(coinGroup);
+                        coins.splice(i, 1);
+                    }
+                }
+
+                for (let i = shields.length - 1; i >= 0; i--) {
+                    const s = shields[i];
+                    s.position.z += obstacleSpeed * currentWarpSpeedMult;
+                    s.rotation.y += 0.05;
+
+                    if (checkCollision(playerHitBox, s.userData.hitBox)) {
+                        // ★シールドを消費せず蓄積
+                        shieldCount++;
+                        updateShieldUI();
+
+                        playSE('shield-get');
+
+                        scene.remove(s);
+                        shields.splice(i, 1);
+                    } else if (s.position.z > 8) {
+                        scene.remove(s);
+                        shields.splice(i, 1);
+                    }
+                }
+
+                for (let i = warpRings.length - 1; i >= 0; i--) {
+                    const w = warpRings[i];
+                    w.position.z += obstacleSpeed * currentWarpSpeedMult;
+
+                    if (checkCollision(playerHitBox, w.userData.hitBox)) {
+                        warpTimeLeft = 90; 
+                        score += 300 * scoreMultiplier; 
+
+                        playSE('warp');
+
+                        scene.remove(w);
+                        warpRings.splice(i, 1);
+                    } else if (w.position.z > 8) {
+                        scene.remove(w);
+                        warpRings.splice(i, 1);
+                    }
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

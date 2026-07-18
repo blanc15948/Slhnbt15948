@@ -31,20 +31,48 @@
       </div>
     </div>
 
+    <!-- 1. 初当たり＆回転数 -->
     <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
       <button @click="toggleSection('sec1')" class="w-full flex justify-between items-center p-3 hover:bg-gray-700/50 transition-colors text-left">
         <h2 class="text-sm font-bold text-orange-400">1. 初当たり＆回転数</h2>
         <span class="text-xs text-gray-400 font-bold">{{ activeSections.sec1 ? '▲ 閉じる' : '▼ 開く' }}</span>
       </button>
-      
+
       <div v-show="activeSections.sec1" class="p-3 border-t border-gray-700 space-y-3 bg-gray-800/50">
+        <div class="bg-gray-700/30 p-2 rounded border border-gray-700 space-y-2">
+          <label class="text-xs text-orange-300 block font-bold">通常時 当たりゲーム数入力(画面)</label>
+          <input type="number" :value="hitGame === 0 ? '' : hitGame" @input="hitGame = Number($event.target.value)" placeholder="例: 250" class="w-full p-2 bg-gray-900 text-xl font-bold text-center rounded text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500">
+          
+          <div class="grid grid-cols-2 gap-2">
+            <button @click="addHitGame" class="bg-orange-600 hover:bg-orange-500 text-xs py-2 px-1 rounded font-bold active:scale-95 transition-transform text-center leading-tight">
+              初当たりボーナス
+            </button>
+            <button @click="addLoopHitGame" class="bg-purple-700 hover:bg-purple-600 text-xs py-2 px-1 rounded font-bold active:scale-95 transition-transform text-center leading-tight">
+              初当たり炎炎激闘
+            </button>
+          </div>
+        </div>
+
         <div>
           <label class="text-xs text-gray-400 block mb-1">通常ゲーム数 (G)</label>
           <input type="number" :value="game === 0 ? '' : game" @input="game = Number($event.target.value)" placeholder="0" class="w-full p-2 bg-gray-700 text-xl font-bold text-center rounded text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
         </div>
+
+        <!-- 確率のリアルタイム常時表示エリア -->
+        <div class="grid grid-cols-2 gap-2 bg-gray-900/40 p-2 rounded border border-gray-700 text-center">
+          <div>
+            <span class="text-[10px] text-gray-400 block">初当たりボナ確率</span>
+            <span class="text-sm font-bold text-orange-400">{{ bonusRatio }}</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-gray-400 block">初当たり炎炎激闘確率</span>
+            <span class="text-sm font-bold text-purple-400">{{ loopRatio }}</span>
+          </div>
+        </div>
+
         <div class="grid grid-cols-2 gap-2">
           <div class="bg-gray-700/50 p-2 rounded text-center">
-            <span class="text-xs block text-gray-300 mb-1">ボーナス初当り</span>
+            <span class="text-xs block text-gray-300 mb-1">初当たり ボーナス</span>
             <input type="number" :value="bonus === 0 ? '' : bonus" @input="bonus = Number($event.target.value)" placeholder="0" class="w-20 mx-auto text-center bg-gray-900/50 border border-gray-600 rounded text-lg font-bold text-orange-400 mb-2 block p-0.5 focus:outline-none focus:border-orange-500">
             <div class="flex justify-center gap-1">
               <button @click="bonus = Math.max(0, bonus - 1)" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-l font-bold w-12 text-lg active:scale-95 transition-transform">-</button>
@@ -52,17 +80,18 @@
             </div>
           </div>
           <div class="bg-gray-700/50 p-2 rounded text-center">
-            <span class="text-xs block text-gray-300 mb-1">炎炎ループ初当り</span>
+            <span class="text-xs block text-gray-300 mb-1">初当たり 炎炎激闘</span>
             <input type="number" :value="loop === 0 ? '' : loop" @input="loop = Number($event.target.value)" placeholder="0" class="w-20 mx-auto text-center bg-gray-900/50 border border-gray-600 rounded text-lg font-bold text-orange-400 mb-2 block p-0.5 focus:outline-none focus:border-orange-500">
             <div class="flex justify-center gap-1">
               <button @click="loop = Math.max(0, loop - 1)" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-l font-bold w-12 text-lg active:scale-95 transition-transform">-</button>
-              <button @click="loop++" class="bg-orange-600 hover:bg-orange-500 px-4 py-2 rounded-r font-bold w-12 text-lg active:scale-95 transition-transform">+</button>
+              <button @click="loop++" class="bg-purple-700 hover:bg-orange-500 px-4 py-2 rounded-r font-bold w-12 text-lg active:scale-95 transition-transform">+</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- 2. 十字目変換 挙動 -->
     <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
       <button @click="toggleSection('sec2')" class="w-full flex justify-between items-center p-3 hover:bg-gray-700/50 transition-colors text-left">
         <h2 class="text-sm font-bold text-orange-400">2. 十字目変換 挙動</h2>
@@ -161,7 +190,6 @@
         <div class="space-y-2 pt-2 border-t border-gray-700/50">
           <span class="text-xs font-bold text-red-400 block">▼ サブ項目: 伝導者の罠</span>
           <div class="bg-gray-700/40 p-2 rounded text-xs space-y-2">
-            
             <div class="flex justify-between items-center bg-black/20 p-2 rounded">
               <span class="font-bold text-gray-300">小Vリプレイ引いた回数</span>
               <div class="flex items-center gap-2">
@@ -172,7 +200,6 @@
                 </div>
               </div>
             </div>
-
             <div class="flex justify-between items-center bg-black/20 p-2 rounded">
               <span class="font-bold text-gray-300">十字目変換数</span>
               <div class="flex items-center gap-2">
@@ -183,7 +210,6 @@
                 </div>
               </div>
             </div>
-
             <div class="flex justify-between items-center bg-black/20 p-2 rounded">
               <span class="font-bold text-green-400">十字目変換ボーナス当選数</span>
               <div class="flex items-center gap-2">
@@ -194,13 +220,12 @@
                 </div>
               </div>
             </div>
-
           </div>
         </div>
-
       </div>
     </div>
 
+    <!-- 3. 通常時スイカ挙動 -->
     <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
       <button @click="toggleSection('sec3')" class="w-full flex justify-between items-center p-3 hover:bg-gray-700/50 transition-colors text-left">
         <h2 class="text-sm font-bold text-orange-400">3. 通常時スイカ挙動</h2>
@@ -229,6 +254,7 @@
       </div>
     </div>
 
+    <!-- 4. REG キャラ紹介 -->
     <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
       <button @click="toggleSection('sec4')" class="w-full flex justify-between items-center p-3 hover:bg-gray-700/50 transition-colors text-left">
         <h2 class="text-sm font-bold text-orange-400">4. REG キャラ紹介（直感表記）</h2>
@@ -237,7 +263,6 @@
 
       <div v-show="activeSections.sec4" class="p-3 border-t border-gray-700 space-y-3 bg-gray-800/50">
         <div class="grid grid-cols-1 gap-2 text-xs">
-
           <div class="bg-gray-700/40 p-2 rounded flex justify-between items-center">
             <div class="pr-2"><span class="block font-bold">デフォルト</span><span class="text-[10px] text-gray-400">ラストに火縄が出現</span></div>
             <div class="flex items-center gap-2 shrink-0">
@@ -248,7 +273,6 @@
               </div>
             </div>
           </div>
-
           <div class="bg-gray-700/40 p-2 rounded flex justify-between items-center">
             <div class="pr-2"><span class="block font-bold text-yellow-300">奇数示唆 (5人目 因果)</span><span class="text-[10px] text-yellow-300/70">ラストに因果が出現</span></div>
             <div class="flex items-center gap-2 shrink-0">
@@ -259,7 +283,6 @@
               </div>
             </div>
           </div>
-
           <div class="bg-gray-700/40 p-2 rounded flex justify-between items-center">
             <div class="pr-2"><span class="block font-bold text-blue-300">偶数示唆 (5人目 桜備)</span><span class="text-[10px] text-blue-300/70">ラストに桜備が出現</span></div>
             <div class="flex items-center gap-2 shrink-0">
@@ -270,7 +293,6 @@
               </div>
             </div>
           </div>
-
           <div class="bg-gray-700/40 p-2 rounded flex justify-between items-center border border-green-600/30">
             <div class="pr-2"><span class="block font-bold text-green-300">高設定示唆・弱 (5人目 オロチ)</span><span class="text-[10px] text-green-300/70">ラストにオロチが出現</span></div>
             <div class="flex items-center gap-2 shrink-0">
@@ -281,7 +303,6 @@
               </div>
             </div>
           </div>
-
           <div class="bg-gray-800 p-2 rounded flex justify-between items-center border-2 border-green-500/50">
             <div class="pr-2"><span class="block font-bold text-green-400">高設定示唆・強 (5人目 リコ)</span><span class="text-[10px] text-green-400/70">ラストにリコが出現</span></div>
             <div class="flex items-center gap-2 shrink-0">
@@ -292,7 +313,6 @@
               </div>
             </div>
           </div>
-
         </div>
 
         <div class="pt-3 border-t border-gray-700/50 space-y-2">
@@ -322,6 +342,7 @@
       </div>
     </div>
 
+    <!-- 5. ボーナス終了画面 -->
     <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
       <button @click="toggleSection('sec5')" class="w-full flex justify-between items-center p-3 hover:bg-gray-700/50 transition-colors text-left">
         <h2 class="text-sm font-bold text-orange-400">5. ボーナス終了画面</h2>
@@ -383,7 +404,7 @@
               <input type="number" :value="regScreenWeak === 0 ? '' : regScreenWeak" @input="regScreenWeak = Number($event.target.value)" placeholder="0" class="w-full text-center bg-transparent font-bold text-purple-400 text-sm my-0.5 focus:outline-none">
               <div class="flex justify-center gap-1">
                 <button @click="regScreenWeak = Math.max(0, regScreenWeak - 1)" class="bg-gray-600 hover:bg-gray-500 px-3 py-1.5 rounded font-bold text-xs">-</button>
-                <button @click="regScreenWeak++" class="bg-purple-600 hover:bg-purple-500 px-3 py-1.5 rounded font-bold text-xs">+</button>
+                <button @click="regScreenWeak++" class="bg-blue-600 hover:bg-purple-500 px-3 py-1.5 rounded font-bold text-xs">+</button>
               </div>
             </div>
             <div class="bg-gray-700/50 p-1.5 rounded flex flex-col justify-between">
@@ -391,7 +412,7 @@
               <input type="number" :value="regScreenStrong === 0 ? '' : regScreenStrong" @input="regScreenStrong = Number($event.target.value)" placeholder="0" class="w-full text-center bg-transparent font-bold text-purple-400 text-sm my-0.5 focus:outline-none">
               <div class="flex justify-center gap-1">
                 <button @click="regScreenStrong = Math.max(0, regScreenStrong - 1)" class="bg-gray-600 hover:bg-gray-500 px-3 py-1.5 rounded font-bold text-xs">-</button>
-                <button @click="regScreenStrong++" class="bg-pink-600 hover:bg-pink-500 px-3 py-1.5 rounded font-bold text-xs">+</button>
+                <button @click="regScreenStrong++" class="bg-purple-600 hover:bg-pink-500 px-3 py-1.5 rounded font-bold text-xs">+</button>
               </div>
             </div>
             <div class="bg-orange-950/40 border border-orange-500/30 p-1.5 rounded flex flex-col justify-between">
@@ -407,24 +428,51 @@
       </div>
     </div>
 
+    <!-- 6. 枚数突破等 確定演出（複数選択・チェック型） -->
     <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
       <button @click="toggleSection('sec6')" class="w-full flex justify-between items-center p-3 hover:bg-gray-700/50 transition-colors text-left">
         <span class="text-xs text-red-400 font-bold block">6. 枚数突破等 確定演出</span>
         <span class="text-xs text-gray-400 font-bold">{{ activeSections.sec6 ? '▲ 閉じる' : '▼ 開く' }}</span>
       </button>
-      
-      <div v-show="activeSections.sec6" class="p-3 border-t border-gray-700 bg-gray-800/50">
-        <select v-model.number="confirmFlag" class="w-full p-2.5 bg-gray-700 border border-red-500/50 rounded text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-500">
-          <option :value="0">確定系なし</option>
-          <option :value="2">設定2以上濃厚</option>
-          <option :value="3">偶数設定濃厚</option>
-          <option :value="4">設定4以上濃厚</option>
-          <option :value="5">設定5以上濃厚</option>
-          <option :value="6">設定6濃厚</option>
-        </select>
+
+      <div v-show="activeSections.sec6" class="p-3 border-t border-gray-700 bg-gray-800/50 space-y-2">
+        <p class="text-[11px] text-gray-400 mb-2">※出現した確定演出をすべて選択してください（再タップで解除）</p>
+        <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+          <button 
+            @click="toggleConfirmFlag(2)"
+            :class="isConfirmSelected(2) ? 'bg-red-600 border-red-400 text-white shadow-md' : 'bg-gray-700 text-gray-300 border-gray-600'"
+            class="p-2.5 rounded border text-center transition-all active:scale-95">
+            設定2以上濃厚
+          </button>
+          <button 
+            @click="toggleConfirmFlag(3)"
+            :class="isConfirmSelected(3) ? 'bg-blue-600 border-blue-400 text-white shadow-md' : 'bg-gray-700 text-gray-300 border-gray-600'"
+            class="p-2.5 rounded border text-center transition-all active:scale-95">
+            偶数設定濃厚
+          </button>
+          <button 
+            @click="toggleConfirmFlag(4)"
+            :class="isConfirmSelected(4) ? 'bg-orange-600 border-orange-400 text-white shadow-md' : 'bg-gray-700 text-gray-300 border-gray-600'"
+            class="p-2.5 rounded border text-center transition-all active:scale-95">
+            設定4以上濃厚
+          </button>
+          <button 
+            @click="toggleConfirmFlag(5)"
+            :class="isConfirmSelected(5) ? 'bg-purple-600 border-purple-400 text-white shadow-md' : 'bg-gray-700 text-gray-300 border-gray-600'"
+            class="p-2.5 rounded border text-center transition-all active:scale-95">
+            設定5以上濃厚
+          </button>
+        </div>
+        <button 
+          @click="toggleConfirmFlag(6)"
+          :class="isConfirmSelected(6) ? 'bg-gradient-to-r from-yellow-600 to-orange-600 border-yellow-400 text-white font-extrabold shadow-md scale-[1.02]' : 'bg-gray-700 text-gray-300 border-gray-600'"
+          class="w-full p-3 rounded border text-center transition-all active:scale-95 text-sm mt-1">
+          👑 設定6濃厚 👑
+        </button>
       </div>
     </div>
 
+    <!-- 推定設定配分結果 -->
     <div class="bg-gray-800 p-4 rounded-lg border-2 border-orange-500 shadow-lg space-y-3">
       <h2 class="text-base font-bold text-center text-orange-400 border-b border-gray-700 pb-2">推定設定配分</h2>
       <div v-for="(p, setting) in probabilities" :key="setting" class="space-y-1">
@@ -465,9 +513,21 @@
         };
 
         // 各数値変数は初期値 0
+        const hitGame = ref(0);
         const game = ref(0);
         const bonus = ref(0);
         const loop = ref(0);
+
+        // --- 初当たり確率のリアルタイム算出プロパティ ---
+        const bonusRatio = computed(() => {
+          if (game.value <= 0 || bonus.value <= 0) return '-';
+          return `1/${(game.value / bonus.value).toFixed(1)}`;
+        });
+
+        const loopRatio = computed(() => {
+          if (game.value <= 0 || loop.value <= 0) return '-';
+          return `1/${(game.value / loop.value).toFixed(1)}`;
+        });
 
         const normVRepConv = ref(0);
         const normVRepWin  = ref(0);
@@ -503,7 +563,39 @@
         const regScreenStrong = ref(0);
         const regScreen4Over = ref(0);
 
-        const confirmFlag = ref(0);
+        // confirmFlagsを複数保持するため配列に変更
+        const confirmFlags = ref([]);
+
+        const toggleConfirmFlag = (val) => {
+          const idx = confirmFlags.value.indexOf(val);
+          if (idx > -1) {
+            confirmFlags.value.splice(idx, 1);
+          } else {
+            confirmFlags.value.push(val);
+          }
+        };
+
+        const isConfirmSelected = (val) => {
+          return confirmFlags.value.includes(val);
+        };
+
+        // ボーナス初当たり加算処理
+        const addHitGame = () => {
+          if (hitGame.value > 0) {
+            game.value += hitGame.value;
+            bonus.value += 1;
+            hitGame.value = 0; // 加算後にクリア
+          }
+        };
+
+        // 炎炎ループ初当たり加算処理
+        const addLoopHitGame = () => {
+          if (hitGame.value > 0) {
+            game.value += hitGame.value;
+            loop.value += 1;
+            hitGame.value = 0; // 加算後にクリア
+          }
+        };
 
         // 連動調整用
         const adjustNormVRepWin = () => { if (normVRepWin.value > normVRepConv.value) normVRepWin.value = normVRepConv.value; };
@@ -564,7 +656,7 @@
 
         const regScreenDefaultProb = [0.88, 0.85, 0.81, 0.76, 0.69, 0.61];
         const regScreenWeakProb    = [0.10, 0.12, 0.15, 0.18, 0.22, 0.25];
-        const regScreenStrongProb  = [0.02, 0.03, 0.04, 0.06, 0.09, 0.14];
+        const regScreenStrongProb = [0.02, 0.03, 0.04, 0.06, 0.09, 0.14];
         const regScreen4OverProb   = [0, 0, 0, 0.05, 0.03, 0.03];
 
         const ncr = (n, r) => {
@@ -648,11 +740,14 @@
               }
             }
 
-            if (confirmFlag.value === 2 && settingNum < 2) likelihoods[i] = 0;
-            if (confirmFlag.value === 3 && settingNum % 2 !== 0) likelihoods[i] = 0;
-            if (confirmFlag.value === 4 && settingNum < 4) likelihoods[i] = 0;
-            if (confirmFlag.value === 5 && settingNum < 5) likelihoods[i] = 0;
-            if (confirmFlag.value === 6 && settingNum !== 6) likelihoods[i] = 0;
+            // 複数選択された確定フラグをすべて判定するループ処理に変更
+            for (const flag of confirmFlags.value) {
+              if (flag === 2 && settingNum < 2) likelihoods[i] = 0;
+              if (flag === 3 && settingNum % 2 !== 0) likelihoods[i] = 0;
+              if (flag === 4 && settingNum < 4) likelihoods[i] = 0;
+              if (flag === 5 && settingNum < 5) likelihoods[i] = 0;
+              if (flag === 6 && settingNum !== 6) likelihoods[i] = 0;
+            }
           }
 
           const sum = likelihoods.reduce((a, b) => a + b, 0);
@@ -661,6 +756,7 @@
         });
 
         const resetAll = () => {
+          hitGame.value = 0;
           game.value = 0; bonus.value = 0; loop.value = 0;
           normVRepConv.value = 0; normVRepWin.value = 0; normRareConv.value = 0; normRareWin.value = 0;
           highVRepConv.value = 0; highVRepWin.value = 0; highRareConv.value = 0; highRareWin.value = 0;
@@ -671,12 +767,13 @@
           regSpecialFlag.value = 0; 
           bigScreenDefault.value = 0; bigScreenWeak.value = 0; bigScreenStrong.value = 0; bigScreen4Over.value = 0;
           regScreenDefault.value = 0; regScreenWeak.value = 0; regScreenStrong.value = 0; regScreen4Over.value = 0;
-          confirmFlag.value = 0;
+          confirmFlags.value = [];
         };
 
         return {
           activeSections, toggleSection, allClosed, toggleAllSections,
-          game, bonus, loop,
+          hitGame, addHitGame, addLoopHitGame,
+          game, bonus, loop, bonusRatio, loopRatio,
           normVRepConv, normVRepWin, normRareConv, normRareWin,
           highVRepConv, highVRepWin, highRareConv, highRareWin,
           trapVRep, trapConv, trapWin, incrementTrapConv, adjustTrapConv, adjustTrapWin,
@@ -685,7 +782,7 @@
           regDefault, regOdd, regEven, regHighWeak, regHighStrong, mamoru, regSpecialFlag,
           bigScreenDefault, bigScreenWeak, bigScreenStrong, bigScreen4Over,
           regScreenDefault, regScreenWeak, regScreenStrong, regScreen4Over,
-          confirmFlag, probabilities, resetAll
+          toggleConfirmFlag, isConfirmSelected, probabilities, resetAll
         };
       }
     }).mount('#app');

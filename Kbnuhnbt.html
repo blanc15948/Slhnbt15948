@@ -527,14 +527,10 @@ function calculateSettings() {
         predDetailsEl.style.display = 'none';
     } else {
         let startLogScore = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
-        if (startCzCount > 0) { for (let s = 1; s <= 6; s++) startLogScore[s] += logPoissonPdf(startCzCount, startNormalG, czProbs[s]) * 0.3; }
-        if (startBonusCount > 0) { for (let s = 1; s <= 6; s++) startLogScore[s] += logPoissonPdf(startBonusCount, startNormalG, bonusProbs[s]) * 0.3; }
-        if (startStCount > 0) { for (let s = 1; s <= 6; s++) startLogScore[s] += logPoissonPdf(startStCount, startNormalG, stProbs[s]) * 0.3; }
+        if (startCzCount > 0) { for (let s = 1; s <= 6; s++) startLogScore[s] += logPoissonPdf(startCzCount, startNormalG, czProbs[s]) * 1.0; }
+        if (startBonusCount > 0) { for (let s = 1; s <= 6; s++) startLogScore[s] += logPoissonPdf(startBonusCount, startNormalG, bonusProbs[s]) * 1.0; }
+        if (startStCount > 0) { for (let s = 1; s <= 6; s++) startLogScore[s] += logPoissonPdf(startStCount, startNormalG, stProbs[s]) * 1.0; }
         
-        startLogScore[4] += 0.20;
-        startLogScore[5] += 0.40;
-        startLogScore[6] += 0.60;
-
         let maxStartLog = -Infinity;
         for (let s = 1; s <= 6; s++) { if (startLogScore[s] > maxStartLog) maxStartLog = startLogScore[s]; }
         
@@ -553,7 +549,16 @@ function calculateSettings() {
             startPctStr.push(`設定${s}:${pct}%`);
         }
         
-        const finalPredSet = Math.round(expectedSetting);
+        // 修正：四捨五入ではなく、一番確率が高い設定の番号をそのまま採用する
+        let bestStartSet = 1;
+        let maxStartPct = -1;
+        for (let s = 1; s <= 6; s++) {
+            const pctVal = parseFloat((startProbs[s] / startSumRaw) * 100);
+            if (pctVal > maxStartPct) {
+                maxStartPct = pctVal;
+                bestStartSet = s;
+            }
+        }
         
         let notice = '';
         if (expectedSetting >= 4.2) {
@@ -561,7 +566,7 @@ function calculateSettings() {
         } else if (expectedSetting >= 3.2) {
             notice = ' (高設定目安・中間以上)';
         }
-        predEl.innerText = `設定 ${finalPredSet}${notice}`;
+        predEl.innerText = `設定 ${bestStartSet}${notice}`;
         
         predDetailsEl.innerText = startPctStr.join(' / ');
         predDetailsEl.style.display = 'block';
@@ -636,18 +641,15 @@ function calculateSettings() {
     if (omiKatana > 0) valid[1] = false;
     if (vNone > 0) { valid[1] = valid[2] = valid[3] = valid[4] = false; }
 
-    // 【キャップ処理】設定1より下振れた場合、設定6より上振れた場合の制限関数
     function getCappedProb(actualCount, games, probMap) {
         if (games <= 0) return { effCount: actualCount, effGames: games };
-        const observedRate = actualCount / games; // 1Gあたりの当選確率など
-        const rate1 = 1 / probMap[1]; // 設定1の確率
-        const rate6 = 1 / probMap[6]; // 設定6の確率
+        const observedRate = actualCount / games;
+        const rate1 = 1 / probMap[1];
+        const rate6 = 1 / probMap[6];
 
-        // 設定1より更に悪化している（下振れが限界を超えている）場合
         if (observedRate < rate1) {
             return { effCount: rate1 * games, effGames: games };
         }
-        // 設定6より更に向上している（上振れが限界を超えている）場合
         if (observedRate > rate6) {
             return { effCount: rate6 * games, effGames: games };
         }

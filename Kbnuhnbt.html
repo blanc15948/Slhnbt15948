@@ -627,7 +627,7 @@ function calculateSettings() {
     let logScore = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
     let valid = { 1: true, 2: true, 3: true, 4: true, 5: true, 6: true };
 
-    // 確定・否定条件（ここは完全にその設定が0%に排除されるべきなので、validフラグをfalseにします）
+    // 確定・否定条件
     if (fix6 || omiItemDaikichi > 0) { valid[1]=valid[2]=valid[3]=valid[4]=valid[5]=false; }
     else if (fix5 || omiItemChukichi > 0) { valid[1]=valid[2]=valid[3]=valid[4]=false; }
     else if (fix4) { valid[1]=valid[2]=valid[3]=false; }
@@ -648,9 +648,16 @@ function calculateSettings() {
     if (normalG > 0 && stCount > 0) {
         for (let s = 1; s <= 6; s++) { if (valid[s]) logScore[s] += logPoissonPdf(stCount, normalG, stProbs[s]) * 0.35; }
     }
-    if (totalG >= 200 && bellCount !== null) {
-        for (let s = 1; s <= 6; s++) { if (valid[s]) logScore[s] += logPoissonPdf(bellCount, totalG, bellProbs[s]) * 0.35; }
+    
+    // 【組み込み完了】下段ベル回数の確率反映（ポアソン分布・重み0.35）
+    if (totalG > 0 && bellCount !== null && bellCount > 0) {
+        for (let s = 1; s <= 6; s++) { 
+            if (valid[s]) {
+                logScore[s] += logPoissonPdf(bellCount, totalG, bellProbs[s]) * 0.35; 
+            } 
+        }
     }
+
     if (chTotal > 0 && chFlash >= 0) {
         const flashRates = { 1: 0.07, 2: 0.08, 3: 0.09, 4: 0.11, 5: 0.13, 6: 0.15 };
         for (let s = 1; s <= 6; s++) { if (valid[s]) logScore[s] += logBinomialPdf(chFlash, chTotal, flashRates[s]) * 0.5; }
@@ -731,7 +738,7 @@ function calculateSettings() {
         }
     }
 
-    const hasData = (czCount > 0 || bonusCount > 0 || stCount > 0 || bellCount !== null || chTotal > 0 || cycle3Total > 0 || cycle4Total > 0 || omi1 || omi2 || omi3 || omi4 || omi5 || vNone > 0 || vMale > 0 || vFemale > 0 || vKageS > 0 || vKageM > 0 || vKageL > 0 || fix6 || fix5 || fix4 || fix3 || fix2 || omiTsuranuki > 0 || omiTanjyu > 0 || omiJiketsu > 0 || omiKatana > 0 || omiKendama > 0 || omiYumi > 0 || omiAgeha > 0 || omiItemShokichi > 0 || omiItemChukichi > 0 || omiItemDaikichi > 0);
+    const hasData = (czCount > 0 || bonusCount > 0 || stCount > 0 || (bellCount !== null && bellCount > 0) || chTotal > 0 || cycle3Total > 0 || cycle4Total > 0 || omi1 || omi2 || omi3 || omi4 || omi5 || vNone > 0 || vMale > 0 || vFemale > 0 || vKageS > 0 || vKageM > 0 || vKageL > 0 || fix6 || fix5 || fix4 || fix3 || fix2 || omiTsuranuki > 0 || omiTanjyu > 0 || omiJiketsu > 0 || omiKatana > 0 || omiKendama > 0 || omiYumi > 0 || omiAgeha > 0 || omiItemShokichi > 0 || omiItemChukichi > 0 || omiItemDaikichi > 0);
 
     let maxLog = -Infinity;
     for (let s = 1; s <= 6; s++) { if (valid[s] && logScore[s] > maxLog) maxLog = logScore[s]; }
@@ -743,11 +750,9 @@ function calculateSettings() {
         if (!hasData && valid[s]) { 
             rawScores[s] = 1; sumRaw += 1;
         } else if (valid[s] && maxLog !== -Infinity) {
-            // 指数変換：あまりに差が開きすぎて0.00%に丸まらないよう、下限の補正を適用
-            // maxLog からの差が一定以下（e^-15 ≒ 0.00003）であっても、存在可能な設定(valid)なら底上げ用の微小な値を与える
             const diffScore = logScore[s] - maxLog;
             const expVal = Math.exp(diffScore);
-            rawScores[s] = Math.max(0.001, expVal); // 最小限スコアの底上げ
+            rawScores[s] = Math.max(0.001, expVal);
             sumRaw += rawScores[s];
         }
     }
@@ -757,21 +762,17 @@ function calculateSettings() {
         return;
     }
 
-    // 各設定のパーセンテージを計算
     let finalPercentages = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
     let finalSum = 0;
     for (let s = 1; s <= 6; s++) {
         if (valid[s]) {
             finalPercentages[s] = (rawScores[s] / sumRaw) * 100;
         } else {
-            finalPercentages[s] = 0; // 確定・否定条件で消えたものは0
+            finalPercentages[s] = 0;
         }
         finalSum += finalPercentages[s];
     }
 
-    // 【徹底対策】
-    // 確定・否定系が出ておらず、データが入力されている場合：
-    // 表示上の丸めで0.0%になってしまわないよう、有効な設定には最低でも 0.1% を保証する
     let validCount = 0;
     for (let s = 1; s <= 6; s++) { if (valid[s]) validCount++; }
 
@@ -783,7 +784,6 @@ function calculateSettings() {
                 finalPercentages[s] = 0.1;
             }
         }
-        // 底上げした分、最も割合の高い設定から微量を引いて100%に均す
         if (adjustAmount > 0) {
             let highestS = 1; let highestV = -1;
             for (let s = 1; s <= 6; s++) {
@@ -793,7 +793,6 @@ function calculateSettings() {
         }
     }
 
-    // 最高パーセンテージ（★の表示用）を再判定
     let highestPct = -1; let highestSet = 1;
     for (let s = 1; s <= 6; s++) {
         if (finalPercentages[s] > highestPct) {

@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L東京喰種 設定判別ツール</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1a1a1a;
+            --text-color: #e0e0e0;
+            --accent-color: #b71c1c;
+            --accent-hover: #d32f2f;
+            --border-color: #333;
+            --btn-plus: #2e7d32;
+            --btn-plus-hover: #388e3c;
+            --btn-minus: #c62828;
+            --btn-minus-hover: #d32f2f;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif, 'Meiryo';
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        h1 {
+            color: #ff5252;
+            font-size: 1.6rem;
+            margin: 0;
+        }
+        .header-btns {
+            display: flex;
+            gap: 8px;
+        }
+        .header-btn {
+            background-color: #333;
+            color: #ccc;
+            border: 1px solid #444;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .header-btn:hover {
+            background-color: #b71c1c;
+            color: white;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 5px;
+            margin-top: 0;
+            margin-bottom: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .card-header:hover {
+            opacity: 0.8;
+        }
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toggle-icon {
+            font-size: 0.9rem;
+            color: #ff8a80;
+            transition: transform 0.2s;
+        }
+        .card.collapsed .card-body {
+            display: none;
+        }
+        .card.collapsed .card-header {
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 0;
+        }
+        .card.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+        h2 {
+            font-size: 1.1rem;
+            color: #ff8a80;
+            margin: 0;
+            border: none;
+            padding: 0;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .input-group {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            color: #ccc;
+        }
+        input[type="number"], select {
+            padding: 8px;
+            background-color: #2c2c2c;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        input:read-only {
+            background-color: #1e1e1e;
+            color: #888;
+            cursor: not-allowed;
+        }
+        
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            background-color: #252525;
+            border: 1px solid #3d3d3d;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            transition: background-color 0.1s, border-color 0.1s;
+        }
+        .checkbox-label:hover {
+            background-color: #2f2f2f;
+            border-color: var(--accent-color);
+        }
+        .checkbox-label input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+        }
+
+        .counter-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        .counter-wrapper input {
+            flex: 1;
+            text-align: center;
+            border-radius: 4px 0 0 4px;
+            border-right: none;
+        }
+        .counter-btn {
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px 14px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.1s;
+        }
+        .counter-btn.minus {
+            background-color: var(--btn-minus);
+            border-left: none;
+            border-right: none;
+        }
+        .counter-btn.minus:hover {
+            background-color: var(--btn-minus-hover);
+        }
+        .counter-btn.plus {
+            background-color: var(--btn-plus);
+            border-radius: 0 4px 4px 0;
+        }
+        .counter-btn.plus:hover {
+            background-color: var(--btn-plus-hover);
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .result-table th, .result-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+        .result-table th {
+            background-color: #252525;
+            color: #ff8a80;
+        }
+        .highlight {
+            background-color: rgba(183, 28, 28, 0.4);
+            font-weight: bold;
+            color: #ff8a80;
+        }
+
+        /* グラフエリア */
+        .chart-container {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .chart-row {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        .chart-label {
+            width: 45px;
+            color: #ff8a80;
+            font-weight: bold;
+        }
+        .chart-bar-bg {
+            flex: 1;
+            background-color: #252525;
+            border: 1px solid #333;
+            border-radius: 4px;
+            height: 18px;
+            overflow: hidden;
+            margin: 0 10px;
+            position: relative;
+        }
+        .chart-bar-fill {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .chart-bar-fill.highest {
+            background-color: #ff5252;
+        }
+        .chart-val {
+            width: 45px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .grid-2, .checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-top {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+            .header-btns {
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-top">
+        <h1>L東京喰種 設定判別ツール</h1>
+        <div class="header-btns">
+            <button class="header-btn" onclick="toggleAllCards()">すべてしまう/開く</button>
+            <button class="header-btn" onclick="resetAllData()">リセット</button>
+        </div>
+    </div>
+    <div class="subtitle">リアルタイム自動保存・カンタン入力システム</div>
+
+    <!-- 0. 前任者データ（引き継ぎ用） -->
+    <div class="card" id="card-sec0" style="border-color: #ff8a80;">
+        <div class="card-header" onclick="toggleCard('card-sec0')">
+            <div class="card-header-left">
+                <span class="toggle-icon">▼</span>
+                <h2>0. 前任者データ（引き継ぎ用）</h2>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="grid-2">
+                <div class="input-group">
+                    <label for="prevNormalGames">前任者 通常ゲーム数 (データランプ)</label>
+                    <input type="number" id="prevNormalGames" min="0" oninput="onPrevInput('prevNormalGames', 'normalGames')">
+                </div>
+                <div class="input-group">
+                    <label for="prevTotalGames">前任者 総ゲーム数 (メニュー画面)</label>
+                    <input type="number" id="prevTotalGames" min="0" oninput="onPrevInput('prevTotalGames', 'totalGames')">
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 5px;">
+                <div class="input-group">
+                    <label>前任者 AT当選回数 (回)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="prevAtCount" min="0" oninput="onPrevInput('prevAtCount', 'atCount')">
+                        <button class="counter-btn minus" onclick="stepValuePrev('prevAtCount', 'atCount', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValuePrev('prevAtCount', 'atCount', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>前任者 CZ総突入回数 (自動計算)</label>
+                    <input type="number" id="prevCzCount" readonly>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 5px;">
+                <div class="input-group">
+                    <label>前任者 CZレミニセンス回数</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="prevCzReminiscenceCount" min="0" oninput="onPrevInput('prevCzReminiscenceCount', 'czReminiscenceCount')">
+                        <button class="counter-btn minus" onclick="stepValuePrev('prevCzReminiscenceCount', 'czReminiscenceCount', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValuePrev('prevCzReminiscenceCount', 'czReminiscenceCount', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>前任者 CZ大喰いのリゼ回数</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="prevCzRizeCount" min="0" oninput="onPrevInput('prevCzRizeCount', 'czRizeCount')">
+                        <button class="counter-btn minus" onclick="stepValuePrev('prevCzRizeCount', 'czRizeCount', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValuePrev('prevCzRizeCount', 'czRizeCount', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 10px;">
+                <table class="result-table" style="font-size: 0.85rem;">
+                    <thead>
+                        <tr>
+                            <th colspan="6" style="background-color: #1a1a1a; color: #ff8a80; border: none;">前任者データ単体からの設定別確率 (%)</th>
+                        </tr>
+                        <tr>
+                            <th>設定1</th><th>設定2</th><th>設定3</th><th>設定4</th><th>設定5</th><th>設定6</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="prevScoreRow">
+                            <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. 基本カウンター -->
+    <div class="card" id="card-sec1">
+        <div class="card-header" onclick="toggleCard('card-sec1')">
+            <div class="card-header-left">
+                <span class="toggle-icon">▼</span>
+                <h2>1. ゲーム数・基本カウンター (累計)</h2>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="grid-2">
+                <div class="input-group">
+                    <label for="normalGames">累計 通常ゲーム数 (データランプ)</label>
+                    <input type="number" id="normalGames" min="0" oninput="onTotalInput('normalGames', 'prevNormalGames')">
+                </div>
+                <div class="input-group">
+                    <label for="totalGames">累計 総ゲーム数 (メニュー画面)</label>
+                    <input type="number" id="totalGames" min="0" oninput="onTotalInput('totalGames', 'prevTotalGames')">
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 5px;">
+                <div class="input-group">
+                    <label>累計 AT初当り回数 (回)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="atCount" min="0" oninput="onTotalInput('atCount', 'prevAtCount')">
+                        <button class="counter-btn minus" onclick="stepValueTotal('atCount', 'prevAtCount', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValueTotal('atCount', 'prevAtCount', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>累計 CZ総突入回数 (自動計算)</label>
+                    <input type="number" id="czCount" readonly>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 5px;">
+                <div class="input-group">
+                    <label>累計 CZ：レミニセンス回数</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="czReminiscenceCount" min="0" oninput="onTotalInput('czReminiscenceCount', 'prevCzReminiscenceCount')">
+                        <button class="counter-btn minus" onclick="stepValueTotal('czReminiscenceCount', 'prevCzReminiscenceCount', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValueTotal('czReminiscenceCount', 'prevCzReminiscenceCount', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>累計 CZ：大喰いのリゼ回数</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="czRizeCount" min="0" oninput="onTotalInput('czRizeCount', 'prevCzRizeCount')">
+                        <button class="counter-btn minus" onclick="stepValueTotal('czRizeCount', 'prevCzRizeCount', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValueTotal('czRizeCount', 'prevCzRizeCount', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 小役・特定当選カウンター -->
+    <div class="card" id="card-sec2">
+        <div class="card-header" onclick="toggleCard('card-sec2')">
+            <div class="card-header-left">
+                <span class="toggle-icon">▼</span>
+                <h2>2. 特定当選・小役カウンター</h2>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="grid-2">
+                <div class="input-group">
+                    <label>CZのうち100G以内当選回数</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="cz100Count" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('cz100Count', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('cz100Count', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>初当りエピソード回数</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="epProbCount" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('epProbCount', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('epProbCount', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 10px;">
+                <div class="input-group">
+                    <label>赫眼リプレイ回数 (下段リプレイ)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="kakuganCount" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('kakuganCount', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('kakuganCount', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>裏AT当選回数 (有馬ジャッジ以外)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="uraAtCount" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('uraAtCount', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('uraAtCount', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 10px;">
+                <div class="input-group">
+                    <label>AT直撃回数 (リプレイ等)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="directAt" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('directAt', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('directAt', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>AT引き戻し成功回数</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="revivalCount" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('revivalCount', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('revivalCount', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. CZ終了画面チェック -->
+    <div class="card" id="card-sec3">
+        <div class="card-header" onclick="toggleCard('card-sec3')">
+            <div class="card-header-left">
+                <span class="toggle-icon">▼</span>
+                <h2>3. CZ終了画面・エンドカード示唆</h2>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="checkbox-grid">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chk_juzo" onchange="calculate()"> 鈴屋什造 (偶数示唆)
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="chk_fukuro" onchange="calculate()"> 梟 (設定4以上濃厚)
+                </label>
+                <label class="checkbox-label" style="grid-column: span 2;">
+                    <input type="checkbox" id="chk_arima" onchange="calculate()"> 有馬貴将 (設定6濃厚)
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 月山招待状カウンター -->
+    <div class="card" id="card-sec4">
+        <div class="card-header" onclick="toggleCard('card-sec4')">
+            <div class="card-header-left">
+                <span class="toggle-icon">▼</span>
+                <h2>4. 月山招待状演出 (50Gごと)</h2>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="grid-2">
+                <div class="input-group">
+                    <label>偶際にはディナーでもどうだい？ (偶数示唆)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="invEvenCount" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('invEvenCount', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('invEvenCount', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>不思議な香りだ… (設定1否定)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="invNot1Count" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('invNot1Count', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('invNot1Count', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 5px;">
+                <div class="input-group">
+                    <label>君はなかなかの活字中毒… (設定2否定)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="invNot2Count" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('invNot2Count', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('invNot2Count', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>本は良いよね… (設定3否定)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="invNot3Count" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('invNot3Count', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('invNot3Count', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 5px;">
+                <div class="input-group">
+                    <label>僕としたことがすまない (設定4否定)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="invNot4Count" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('invNot4Count', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('invNot4Count', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>存分に楽しもうじゃないか (設定4以上)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="inv4Count" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('inv4Count', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('inv4Count', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 5px;">
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>特別な夜を楽しもうじゃないか (設定6)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="inv6Count" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('inv6Count', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('inv6Count', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. AT終了画面カウンター -->
+    <div class="card" id="card-sec5">
+        <div class="card-header" onclick="toggleCard('card-sec5')">
+            <div class="card-header-left">
+                <span class="toggle-icon">▼</span>
+                <h2>5. AT終了画面カウンター</h2>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="grid-2">
+                <div class="input-group">
+                    <label>デフォルト (設定1:84%〜6:76%)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="scr_default" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('scr_default', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('scr_default', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>奇数示唆 (奇数:12% / 偶数:6%)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="scr_odd" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('scr_odd', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('scr_odd', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 5px;">
+                <div class="input-group">
+                    <label>偶数示唆 (偶数:12% / 奇数:6%)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="scr_even" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('scr_even', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('scr_even', 1)">+</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>高設定示唆弱 (1-3:2% / 4:2% / 5-6:3%)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="scr_high_weak" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('scr_high_weak', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('scr_high_weak', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 5px;">
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>高設定示唆強 (1-2:2% / 3-4:5% / 5-6:9%)</label>
+                    <div class="counter-wrapper">
+                        <input type="number" id="scr_high_strong" min="0" oninput="calculate()">
+                        <button class="counter-btn minus" onclick="stepValue('scr_high_strong', -1)">-</button>
+                        <button class="counter-btn plus" onclick="stepValue('scr_high_strong', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 15px; border-top: 1px dashed #444; padding-top: 12px;">
+                <label style="margin-bottom: 8px; display: block; color: #ff8a80; font-weight: bold;">否定・確定系（該当するものにチェック）</label>
+                <div class="checkbox-grid">
+                    <label class="checkbox-label"><input type="checkbox" id="chk_not1" onchange="calculate()"> 1否定</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk_not2" onchange="calculate()"> 2否定</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk_not3" onchange="calculate()"> 3否定</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk_not4" onchange="calculate()"> 4否定</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk_over3" onchange="calculate()"> 3以上確定</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk_over4" onchange="calculate()"> 4以上確定</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk_over5" onchange="calculate()"> 5以上確定</label>
+                    <label class="checkbox-label"><input type="checkbox" id="chk_over6" onchange="calculate()"> 6確定</label>
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-top: 15px;">
+                <div class="input-group" style="grid-column: span 2;">
+                    <label for="medalSelect">AT獲得枚数表示</label>
+                    <select id="medalSelect" onchange="calculate()">
+                        <option value="none">選択なし / デフォルト</option>
+                        <option value="over456">456 OVER (設定4以上)</option>
+                        <option value="over666">666 / 1000-7 OVER (設定6濃厚)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 結果表示 -->
+    <div class="card" id="card-sec6">
+        <div class="card-header" onclick="toggleCard('card-sec6')">
+            <div class="card-header-left">
+                <span class="toggle-icon">▼</span>
+                <h2>推測結果ポイント比較 (トータル合算)</h2>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="result-table">
+                <thead>
+                    <tr>
+                        <th>設定1</th>
+                        <th>設定2</th>
+                        <th>設定3</th>
+                        <th>設定4</th>
+                        <th>設定5</th>
+                        <th>設定6</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="scoreRow">
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 横棒グラフエリア -->
+            <div class="chart-container" id="chartContainer">
+                <div class="chart-row">
+                    <div class="chart-label">設定1</div>
+                    <div class="chart-bar-bg"><div class="chart-bar-fill" id="bar-0"></div></div>
+                    <div class="chart-val" id="val-0">-</div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-label">設定2</div>
+                    <div class="chart-bar-bg"><div class="chart-bar-fill" id="bar-1"></div></div>
+                    <div class="chart-val" id="val-1">-</div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-label">設定3</div>
+                    <div class="chart-bar-bg"><div class="chart-bar-fill" id="bar-2"></div></div>
+                    <div class="chart-val" id="val-2">-</div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-label">設定4</div>
+                    <div class="chart-bar-bg"><div class="chart-bar-fill" id="bar-3"></div></div>
+                    <div class="chart-val" id="val-3">-</div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-label">設定5</div>
+                    <div class="chart-bar-bg"><div class="chart-bar-fill" id="bar-4"></div></div>
+                    <div class="chart-val" id="val-4">-</div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-label">設定6</div>
+                    <div class="chart-bar-bg"><div class="chart-bar-fill" id="bar-5"></div></div>
+                    <div class="chart-val" id="val-5">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ids = [
+        'prevNormalGames', 'prevTotalGames', 'prevAtCount', 'prevCzReminiscenceCount', 'prevCzRizeCount',
+        'normalGames', 'totalGames', 'atCount', 'czReminiscenceCount', 'czRizeCount', 'cz100Count', 'epProbCount', 'kakuganCount', 'uraAtCount', 'directAt', 'revivalCount', 'chk_juzo', 'chk_fukuro', 'chk_arima', 'invEvenCount', 'invNot1Count', 'invNot2Count', 'invNot3Count', 'invNot4Count', 'inv4Count', 'inv6Count', 'scr_default', 'scr_odd', 'scr_even', 'scr_high_weak', 'scr_high_strong', 'chk_not1', 'chk_not2', 'chk_not3', 'chk_not4', 'chk_over3', 'chk_over4', 'chk_over5', 'chk_over6', 'medalSelect'
+    ];
+
+    const cardIds = ['card-sec0', 'card-sec1', 'card-sec2', 'card-sec3', 'card-sec4', 'card-sec5', 'card-sec6'];
+
+    const specs = {
+        atProb: [394.4, 380.5, 357.0, 325.9, 291.2, 261.3],
+        czProb: [262.6, 255.6, 246.5, 233.1, 216.4, 203.7],
+        cz100Rate: [0.1958, 0.2104, 0.2315, 0.2637, 0.3196, 0.3601],
+        epProb: [6620.2, 5879.7, 5114.5, 4062.5, 3166.7, 2639.5],
+        kakuganProb: [1260.3, 1213.6, 1170.3, 1129.9, 1092.3, 1024.0],
+        uraAtRate: [0.0110, 0.0132, 0.0163, 0.0219, 0.0285, 0.0332],
+        directAtProb: [28460, 24453, 18093, 12019, 8615, 7036],
+        revivalRate: [0.0781, 0.0781, 0.0938, 0.1094, 0.1250, 0.1523]
+    };
+
+    window.onload = function() {
+        loadData();
+        calculate();
+    };
+
+    function toggleCard(cardId) {
+        const card = document.getElementById(cardId);
+        card.classList.toggle('collapsed');
+        saveCollapseState();
+    }
+
+    let allCollapsed = false;
+    function toggleAllCards() {
+        allCollapsed = !allCollapsed;
+        cardIds.forEach(id => {
+            const card = document.getElementById(id);
+            if (allCollapsed) {
+                card.classList.add('collapsed');
+            } else {
+                card.classList.remove('collapsed');
+            }
+        });
+        saveCollapseState();
+    }
+
+    function saveCollapseState() {
+        let states = {};
+        cardIds.forEach(id => {
+            states[id] = document.getElementById(id).classList.contains('collapsed');
+        });
+        localStorage.setItem('tokyoGhoulCollapse', JSON.stringify(states));
+    }
+
+    function loadCollapseState() {
+        const saved = localStorage.getItem('tokyoGhoulCollapse');
+        if (saved) {
+            try {
+                let states = JSON.parse(saved);
+                cardIds.forEach(id => {
+                    if (states[id]) {
+                        document.getElementById(id).classList.add('collapsed');
+                    } else {
+                        document.getElementById(id).classList.remove('collapsed');
+                    }
+                });
+            } catch(e) {}
+        }
+    }
+
+    function stepValue(id, amount) {
+        const input = document.getElementById(id);
+        let val = parseInt(input.value) || 0;
+        val += amount;
+        if (val < 0) val = 0;
+        input.value = (val === 0) ? '' : val;
+        calculate();
+    }
+
+    function stepValuePrev(prevId, targetId, amount) {
+        const prevInput = document.getElementById(prevId);
+        let val = parseInt(prevInput.value) || 0;
+        val += amount;
+        if (val < 0) val = 0;
+        prevInput.value = (val === 0) ? '' : val;
+        onPrevInput(prevId, targetId);
+    }
+
+    function stepValueTotal(targetId, prevId, amount) {
+        const targetInput = document.getElementById(targetId);
+        let val = parseInt(targetInput.value) || 0;
+        val += amount;
+        if (val < 0) val = 0;
+        targetInput.value = (val === 0) ? '' : val;
+        onTotalInput(targetId, prevId);
+    }
+
+    function onPrevInput(prevId, targetId) {
+        const prevValStr = document.getElementById(prevId).value;
+        const prevVal = parseInt(prevValStr) || 0;
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+            let currentTargetVal = parseInt(targetEl.value) || 0;
+            if (currentTargetVal === 0 || targetEl.value === '' || currentTargetVal < prevVal) {
+                targetEl.value = prevValStr;
+            }
+        }
+        calculate();
+    }
+
+    function onTotalInput(targetId, prevId) {
+        const targetEl = document.getElementById(targetId);
+        const prevEl = document.getElementById(prevId);
+        if (targetEl && prevEl) {
+            let targetVal = parseInt(targetEl.value) || 0;
+            let prevVal = parseInt(prevEl.value) || 0;
+            if (targetVal < prevVal) {
+                prevEl.value = targetEl.value;
+            }
+        }
+        calculate();
+    }
+
+    function saveData() {
+        let data = {};
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (el.type === 'checkbox') {
+                    data[id] = el.checked;
+                } else {
+                    data[id] = el.value;
+                }
+            }
+        });
+        localStorage.setItem('tokyoGhoulData', JSON.stringify(data));
+    }
+
+    function loadData() {
+        const saved = localStorage.getItem('tokyoGhoulData');
+        if (saved) {
+            try {
+                let data = JSON.parse(saved);
+                ids.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && data[id] !== undefined) {
+                        if (el.type === 'checkbox') {
+                            el.checked = data[id];
+                        } else {
+                            el.value = (data[id] === '0' || data[id] === 0) ? '' : data[id];
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("データ読み込みエラー", e);
+            }
+        }
+        loadCollapseState();
+    }
+
+    function resetAllData() {
+        if (confirm("すべてのカウンターと選択内容をリセットしますか？")) {
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (el.type === 'checkbox') {
+                        el.checked = false;
+                    } else if (el.tagName === 'SELECT') {
+                        el.value = 'none';
+                    } else {
+                        el.value = '';
+                    }
+                }
+            });
+            localStorage.removeItem('tokyoGhoulData');
+            calculate();
+        }
+    }
+
+    function computeScores(normalGames, totalGames, atCount, czCount, czReminiscenceCount, czRizeCount, cz100Count, epProbCount, kakuganCount, uraAtCount, directAt, revivalCount, chkJuzo, chkFukuro, chkArima, invEvenCount, invNot1Count, invNot2Count, invNot3Count, invNot4Count, inv4Count, inv6Count, c_default, c_odd, c_even, c_hw, c_hs, chkNot1, chkNot2, chkNot3, chkNot4, chkOver3, chkOver4, chkOver5, chkOver6, medal) {
+        let scores = [10, 10, 10, 10, 10, 10];
+
+        if (normalGames > 0 && atCount > 0) {
+            const currentAtProb = normalGames / atCount;
+            for (let i = 0; i < 6; i++) {
+                let diff = Math.abs(currentAtProb - specs.atProb[i]);
+                scores[i] += Math.max(0, 25 - (diff / 5));
+            }
+        }
+
+        if (normalGames > 0 && czCount > 0) {
+            const currentCzProb = normalGames / czCount;
+            for (let i = 0; i < 6; i++) {
+                let diff = Math.abs(currentCzProb - specs.czProb[i]);
+                scores[i] += Math.max(0, 15 - (diff / 10));
+            }
+        }
+
+        if (czCount > 0) {
+            let rizeRatio = czRizeCount / czCount;
+            for (let i = 0; i < 6; i++) {
+                let expectedRizeRatio = 0.2 + (i * 0.03);
+                let diff = Math.abs(rizeRatio - expectedRizeRatio);
+                scores[i] += Math.max(0, 8 - (diff * 15));
+            }
+        }
+
+        if (czCount > 0 && cz100Count > 0) {
+            const ratio = cz100Count / czCount;
+            for (let i = 0; i < 6; i++) {
+                let diff = Math.abs(ratio - specs.cz100Rate[i]);
+                scores[i] += Math.max(0, 10 - (diff * 25));
+            }
+        }
+
+        if (normalGames > 0 && epProbCount > 0) {
+            const currentEpProb = normalGames / epProbCount;
+            for (let i = 0; i < 6; i++) {
+                let diff = Math.abs(currentEpProb - specs.epProb[i]);
+                scores[i] += Math.max(0, 15 - (diff / 300));
+            }
+        }
+
+        if (totalGames > 0 && kakuganCount > 0) {
+            const currentKakuganProb = totalGames / kakuganCount;
+            for (let i = 0; i < 6; i++) {
+                let diff = Math.abs(currentKakuganProb - specs.kakuganProb[i]);
+                scores[i] += Math.max(0, 12 - (diff / 200));
+            }
+        }
+
+        if (atCount > 0 && uraAtCount > 0) {
+            const rate = uraAtCount / atCount;
+            for (let i = 0; i < 6; i++) {
+                let diff = Math.abs(rate - specs.uraAtRate[i]);
+                scores[i] += Math.max(0, 15 - (diff * 80));
+            }
+        }
+
+        if (totalGames > 0 && directAt > 0) {
+            const currentDirectProb = totalGames / directAt;
+            for (let i = 0; i < 6; i++) {
+                let diff = Math.abs(currentDirectProb - specs.directAtProb[i]);
+                scores[i] += Math.max(0, 15 - (diff / 1000));
+            }
+        }
+
+        if (atCount > 0 && revivalCount > 0) {
+            const rate = revivalCount / atCount;
+            for (let i = 0; i < 6; i++) {
+                let diff = Math.abs(rate - specs.revivalRate[i]);
+                scores[i] += Math.max(0, 10 - (diff * 40));
+            }
+        }
+
+        if (chkJuzo) { scores[1]+=30; scores[3]+=30; scores[5]+=30; }
+        if (chkFukuro) { scores[0]=0; scores[1]=0; scores[2]=0; scores[3]+=50; scores[4]+=50; scores[5]+=50; }
+        if (chkArima) { scores[0]=0; scores[1]=0; scores[2]=0; scores[3]=0; scores[4]=0; scores[5]+=200; }
+
+        if (invEvenCount > 0) { scores[1]+=invEvenCount*30; scores[3]+=invEvenCount*30; scores[5]+=invEvenCount*30; }
+        if (invNot1Count > 0) { scores[0] = 0; }
+        if (invNot2Count > 0) { scores[1] = 0; }
+        if (invNot3Count > 0) { scores[2] = 0; }
+        if (invNot4Count > 0) { scores[3] = 0; }
+
+        if (inv4Count > 0) { scores[0]=0; scores[1]=0; scores[2]=0; scores[3]+=50; scores[4]+=50; scores[5]+=50; }
+        if (inv6Count > 0) { scores[0]=0; scores[1]=0; scores[2]=0; scores[3]=0; scores[4]=0; scores[5]+=200; }
+
+        if (c_default > 0) {
+            scores[0] += c_default * 84; scores[1] += c_default * 90;
+            scores[2] += c_default * 78; scores[3] += c_default * 84;
+            scores[4] += c_default * 70; scores[5] += c_default * 76;
+        }
+        if (c_odd > 0) {
+            scores[0] += c_odd * 12; scores[1] += c_odd * 6;
+            scores[2] += c_odd * 12; scores[3] += c_odd * 6;
+            scores[4] += c_odd * 12; scores[5] += c_odd * 6;
+        }
+        if (c_even > 0) {
+            scores[0] += c_even * 6;  scores[1] += c_even * 12;
+            scores[2] += c_even * 6;  scores[3] += c_even * 12;
+            scores[4] += c_even * 6;  scores[5] += c_even * 12;
+        }
+        if (c_hw > 0) {
+            scores[0] += c_hw * 2; scores[1] += c_hw * 2; scores[2] += c_hw * 2;
+            scores[3] += c_hw * 2; scores[4] += c_hw * 3; scores[5] += c_hw * 3;
+        }
+        if (c_hs > 0) {
+            scores[0] += c_hs * 2; scores[1] += c_hs * 2;
+            scores[2] += c_hs * 5; scores[3] += c_hs * 5;
+            scores[4] += c_hs * 9; scores[5] += c_hs * 9;
+        }
+
+        if (chkNot1) { scores[0] = 0; }
+        if (chkNot2) { scores[1] = 0; }
+        if (chkNot3) { scores[2] = 0; }
+        if (chkNot4) { scores[3] = 0; }
+
+        if (chkOver3) { scores[0] = 0; scores[1] = 0; }
+        if (chkOver4) { scores[0] = 0; scores[1] = 0; scores[2] = 0; }
+        if (chkOver5) { scores[0] = 0; scores[1] = 0; scores[2] = 0; scores[3] = 0; }
+        if (chkOver6) { scores[0] = 0; scores[1] = 0; scores[2] = 0; scores[3] = 0; scores[4] = 0; }
+
+        if (medal === 'over456') { scores[0]=0; scores[1]=0; scores[2]=0; scores[3]+=50; scores[4]+=50; scores[5]+=50; }
+        if (medal === 'over666') { scores[0]=0; scores[1]=0; scores[2]=0; scores[3]=0; scores[4]=0; scores[5]+=200; }
+
+        return scores.map(s => Math.max(0, s));
+    }
+
+    function calculate() {
+        const prevNormalGames = parseFloat(document.getElementById('prevNormalGames').value) || 0;
+        const prevTotalGames = parseFloat(document.getElementById('prevTotalGames').value) || 0;
+        const prevAtCount = parseFloat(document.getElementById('prevAtCount').value) || 0;
+        const prevCzRem = parseFloat(document.getElementById('prevCzReminiscenceCount').value) || 0;
+        const prevCzRize = parseFloat(document.getElementById('prevCzRizeCount').value) || 0;
+        const prevCzCount = prevCzRem + prevCzRize;
+        const prevEl = document.getElementById('prevCzCount');
+        if (prevEl) prevEl.value = (prevCzCount === 0) ? '' : prevCzCount;
+
+        const normalGames = parseFloat(document.getElementById('normalGames').value) || 0;
+        const totalGames = parseFloat(document.getElementById('totalGames').value) || 0;
+        const atCount = parseFloat(document.getElementById('atCount').value) || 0;
+        const czReminiscenceCount = parseFloat(document.getElementById('czReminiscenceCount').value) || 0;
+        const czRizeCount = parseFloat(document.getElementById('czRizeCount').value) || 0;
+        const czCount = czReminiscenceCount + czRizeCount;
+        const czEl = document.getElementById('czCount');
+        if (czEl) czEl.value = (czCount === 0) ? '' : czCount;
+
+        saveData();
+        
+        const cz100Count = parseFloat(document.getElementById('cz100Count').value) || 0;
+        const epProbCount = parseFloat(document.getElementById('epProbCount').value) || 0;
+        const kakuganCount = parseFloat(document.getElementById('kakuganCount').value) || 0;
+        const uraAtCount = parseFloat(document.getElementById('uraAtCount').value) || 0;
+        const directAt = parseFloat(document.getElementById('directAt').value) || 0;
+        const revivalCount = parseFloat(document.getElementById('revivalCount').value) || 0;
+
+        const chkJuzo = document.getElementById('chk_juzo').checked;
+        const chkFukuro = document.getElementById('chk_fukuro').checked;
+        const chkArima = document.getElementById('chk_arima').checked;
+
+        const invEvenCount = parseFloat(document.getElementById('invEvenCount').value) || 0;
+        const invNot1Count = parseFloat(document.getElementById('invNot1Count').value) || 0;
+        const invNot2Count = parseFloat(document.getElementById('invNot2Count').value) || 0;
+        const invNot3Count = parseFloat(document.getElementById('invNot3Count').value) || 0;
+        const invNot4Count = parseFloat(document.getElementById('invNot4Count').value) || 0;
+        const inv4Count = parseFloat(document.getElementById('inv4Count').value) || 0;
+        const inv6Count = parseFloat(document.getElementById('inv6Count').value) || 0;
+
+        const c_default = parseFloat(document.getElementById('scr_default').value) || 0;
+        const c_odd = parseFloat(document.getElementById('scr_odd').value) || 0;
+        const c_even = parseFloat(document.getElementById('scr_even').value) || 0;
+        const c_hw = parseFloat(document.getElementById('scr_high_weak').value) || 0;
+        const c_hs = parseFloat(document.getElementById('scr_high_strong').value) || 0;
+
+        const chkNot1 = document.getElementById('chk_not1').checked;
+        const chkNot2 = document.getElementById('chk_not2').checked;
+        const chkNot3 = document.getElementById('chk_not3').checked;
+        const chkNot4 = document.getElementById('chk_not4').checked;
+        const chkOver3 = document.getElementById('chk_over3').checked;
+        const chkOver4 = document.getElementById('chk_over4').checked;
+        const chkOver5 = document.getElementById('chk_over5').checked;
+        const chkOver6 = document.getElementById('chk_over6').checked;
+
+        const medal = document.getElementById('medalSelect').value;
+
+        let prevScores = computeScores(prevNormalGames, prevTotalGames, prevAtCount, prevCzCount, prevCzRem, prevCzRize, 0, 0, 0, 0, 0, 0, false, false, false, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, false, false, false, false, false, false, false, false, 'none');
+        let prevTotalScore = prevScores.reduce((a, b) => a + b, 0);
+        let prevPercentages = [0, 0, 0, 0, 0, 0];
+        if (prevTotalScore > 0) {
+            prevPercentages = prevScores.map(s => Math.round((s / prevTotalScore) * 100));
+        }
+        let prevRowHtml = '';
+        let prevMaxScore = Math.max(...prevPercentages);
+        for (let i = 0; i < 6; i++) {
+            let isHighest = (prevPercentages[i] === prevMaxScore && prevMaxScore > 0);
+            let cellClass = isHighest ? 'highlight' : '';
+            prevRowHtml += `<td class="${cellClass}">${prevTotalScore > 0 ? prevPercentages[i] + '%' : '-'}</td>`;
+        }
+        document.getElementById('prevScoreRow').innerHTML = prevRowHtml;
+
+        let myTotalGames = totalGames - prevTotalGames;
+        if (myTotalGames < 0) myTotalGames = 0;
+
+        let scores = computeScores(normalGames, totalGames, atCount, czCount, czReminiscenceCount, czRizeCount, cz100Count, epProbCount, kakuganCount, uraAtCount, directAt, revivalCount, chkJuzo, chkFukuro, chkArima, invEvenCount, invNot1Count, invNot2Count, invNot3Count, invNot4Count, inv4Count, inv6Count, c_default, c_odd, c_even, c_hw, c_hs, chkNot1, chkNot2, chkNot3, chkNot4, chkOver3, chkOver4, chkOver5, chkOver6, medal);
+
+        if (myTotalGames > 0 && kakuganCount > 0) {
+            const currentKakuganProb = myTotalGames / kakuganCount;
+            for (let i = 0; i < 6; i++) {
+                let diff = Math.abs(currentKakuganProb - specs.kakuganProb[i]);
+                scores[i] += Math.max(0, 12 - (diff / 200));
+            }
+        }
+
+        let totalScore = scores.reduce((a, b) => a + b, 0);
+        let percentages = [0, 0, 0, 0, 0, 0];
+        if (totalScore > 0) {
+            percentages = scores.map(s => Math.round((s / totalScore) * 100));
+        }
+
+        let rowHtml = '';
+        let maxScore = Math.max(...percentages);
+        for (let i = 0; i < 6; i++) {
+            let isHighest = (percentages[i] === maxScore && maxScore > 0 && totalScore > 60);
+            let cellClass = isHighest ? 'highlight' : '';
+            rowHtml += `<td class="${cellClass}">${totalScore > 60 ? percentages[i] + '%' : '-'}</td>`;
+
+            // グラフ更新
+            const bar = document.getElementById(`bar-${i}`);
+            const val = document.getElementById(`val-${i}`);
+            if (totalScore > 60) {
+                bar.style.width = percentages[i] + '%';
+                val.textContent = percentages[i] + '%';
+                if (isHighest) {
+                    bar.classList.add('highest');
+                } else {
+                    bar.classList.remove('highest');
+                }
+            } else {
+                bar.style.width = '0%';
+                val.textContent = '-';
+                bar.classList.remove('highest');
+            }
+        }
+        document.getElementById('scoreRow').innerHTML = rowHtml;
+    }
+</script>
+
+</body>
+</html>

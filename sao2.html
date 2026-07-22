@@ -273,6 +273,10 @@
             <span class="arrow-icon">▼</span>
         </div>
         <div class="card-body">
+            <div class="form-group" style="background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px dashed #ced4da; margin-bottom: 12px;">
+                <label for="prev_total_games" style="color: #495057;">前任者 総ゲーム数<br><span style="font-size:0.75rem; color:#6c757d; font-weight:normal;">(通常時 ＋ AT中すべて合わせたG数)</span></label>
+                <input type="number" id="prev_total_games" class="game-input count-field" placeholder="0" min="0" oninput="calculateSetting()">
+            </div>
             <div class="form-group">
                 <label for="prev_games">通常G数</label>
                 <input type="number" id="prev_games" class="game-input count-field" placeholder="0" min="0" oninput="syncPrevData()">
@@ -347,7 +351,7 @@
             </div>
 
             <div class="form-group">
-                <label>強チャンス目B <span id="chance_b_prob" class="prob-display">(-)</span><br><span style="font-size:0.75rem; color:#6c757d; font-weight:normal;">上段スイカ・スイカ・ベル（総G数参照）</span></label>
+                <label>強チャンス目B <span id="chance_b_prob" class="prob-display">(-)</span><br><span style="font-size:0.75rem; color:#6c757d; font-weight:normal;">上段スイカ・スイカ・ベル（自分の遊技分G数参照）</span></label>
                 <div class="counter-group">
                     <button class="btn-cnt minus" onclick="changeVal('chance_b_count', -1)">-</button>
                     <input type="number" id="chance_b_count" class="input-val count-field" placeholder="0" min="0" oninput="calculateSetting()">
@@ -899,6 +903,7 @@ function calculateSetting() {
     const prevG = getVal('prev_games');
     const prevCZ = getVal('prev_cz');
     const prevAT = getVal('prev_at');
+    const prevTotalG = getVal('prev_total_games');
 
     document.getElementById('prev_cz_prob').textContent = (prevG > 0 && prevCZ > 0) ? `(1/${(prevG / prevCZ).toFixed(1)})` : '(-)';
     document.getElementById('prev_at_prob').textContent = (prevG > 0 && prevAT > 0) ? `(1/${(prevG / prevAT).toFixed(1)})` : '(-)';
@@ -958,7 +963,10 @@ function calculateSetting() {
     document.getElementById('total_cz_prob').textContent = (G > 0 && CZ > 0) ? `(1/${(G / CZ).toFixed(1)})` : '(-)';
     document.getElementById('total_at_prob').textContent = (G > 0 && AT > 0) ? `(1/${(G / AT).toFixed(1)})` : '(-)';
     document.getElementById('cz_direct_prob').textContent = (G > 0 && CZDirect > 0) ? `(1/${(G / CZDirect).toFixed(1)})` : '(-)';
-    document.getElementById('chance_b_prob').textContent = (TotalG > 0 && ChanceB > 0) ? `(1/${(TotalG / ChanceB).toFixed(1)})` : '(-)';
+    
+    // 強チャンス目Bのゲーム数（累計総ゲーム数 - 前任者総ゲーム数）
+    const myTotalG = Math.max(0, TotalG - prevTotalG);
+    document.getElementById('chance_b_prob').textContent = (myTotalG > 0 && ChanceB > 0) ? `(1/${(myTotalG / ChanceB).toFixed(1)})` : '(-)';
 
     // 終了画面
     const s_def = getVal('screen_def');
@@ -1024,12 +1032,12 @@ function calculateSetting() {
         }
     }
 
-    // 強チャンス目Bのポアソン分布計算（総ゲーム数 TotalG 参照）
-    if (TotalG > 0) {
+    // 強チャンス目Bのポアソン分布計算（自分の遊技分総ゲーム数 myTotalG 参照）
+    if (myTotalG > 0) {
         for (let i = 0; i < 6; i++) {
             if (likelihoods[i] === 0) continue;
 
-            const expChanceB = TotalG * SPECS.chance_b[i];
+            const expChanceB = myTotalG * SPECS.chance_b[i];
             const pChanceB = poissonProbability(expChanceB, ChanceB);
 
             likelihoods[i] *= pChanceB;

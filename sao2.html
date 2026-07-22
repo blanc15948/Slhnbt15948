@@ -302,7 +302,7 @@
             <div class="form-group" style="background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px dashed #ced4da; margin-bottom: 12px;">
                 <label for="total_games" style="color: #007bff;">累計総ゲーム数<br><span style="font-size:0.75rem; color:#6c757d; font-weight:normal;">(通常時 ＋ AT中すべて合わせたG数)</span></label>
                 <div class="counter-group">
-                    <input type="number" id="total_games" class="game-input count-field" placeholder="0" min="0" oninput="limitCumulativeData()">
+                    <input type="number" id="total_games" class="game-input count-field" placeholder="0" min="0" oninput="calculateSetting()">
                     <button class="btn-quick" style="background: #e7f1ff; border-color: #b8daff; color: #004085;" onclick="addTotalGames(10)">+10</button>
                     <button class="btn-quick" style="background: #e7f1ff; border-color: #b8daff; color: #004085;" onclick="addTotalGames(100)">+100</button>
                     <button class="btn-quick" style="background: #e7f1ff; border-color: #b8daff; color: #004085;" onclick="addTotalGames(-100)">-100</button>
@@ -312,7 +312,7 @@
             <div class="form-group">
                 <label for="games">累計通常G数</label>
                 <div class="counter-group">
-                    <input type="number" id="games" class="game-input count-field" placeholder="0" min="0" oninput="limitCumulativeData()">
+                    <input type="number" id="games" class="game-input count-field" placeholder="0" min="0" oninput="calculateSetting()">
                     <button class="btn-quick" onclick="addGames(10)">+10</button>
                     <button class="btn-quick" onclick="addGames(100)">+100</button>
                     <button class="btn-quick" onclick="addGames(-100)">-100</button>
@@ -323,7 +323,7 @@
                 <label>累計CZ回数 <span id="total_cz_prob" class="prob-display">(-)</span></label>
                 <div class="counter-group">
                     <button class="btn-cnt minus" onclick="changeVal('cz_count', -1)">-</button>
-                    <input type="number" id="cz_count" class="input-val count-field" placeholder="0" min="0" oninput="limitCumulativeData()">
+                    <input type="number" id="cz_count" class="input-val count-field" placeholder="0" min="0" oninput="calculateSetting()">
                     <button class="btn-cnt plus" onclick="changeVal('cz_count', 1)">+</button>
                 </div>
             </div>
@@ -332,7 +332,7 @@
                 <label>累計AT初当り回数 <span id="total_at_prob" class="prob-display">(-)</span></label>
                 <div class="counter-group">
                     <button class="btn-cnt minus" onclick="changeVal('at_count', -1)">-</button>
-                    <input type="number" id="at_count" class="input-val count-field" placeholder="0" min="0" oninput="limitCumulativeData()">
+                    <input type="number" id="at_count" class="input-val count-field" placeholder="0" min="0" oninput="calculateSetting()">
                     <button class="btn-cnt plus" onclick="changeVal('at_count', 1)">+</button>
                 </div>
             </div>
@@ -803,6 +803,7 @@ function resetAll() {
     }
 }
 
+// 前任者データを変更した時だけ累計の下限値を自動設定し直す
 function syncPrevData() {
     const prevG = getVal('prev_games');
     const prevCZ = getVal('prev_cz');
@@ -818,34 +819,12 @@ function syncPrevData() {
     calculateSetting();
 }
 
-function limitCumulativeData() {
-    const prevG = getVal('prev_games');
-    const prevCZ = getVal('prev_cz');
-    const prevAT = getVal('prev_at');
-
-    if (getVal('games') < prevG) document.getElementById('games').value = prevG || '';
-    if (getVal('cz_count') < prevCZ) document.getElementById('cz_count').value = prevCZ || '';
-    if (getVal('at_count') < prevAT) document.getElementById('at_count').value = prevAT || '';
-
-    const currentG = getVal('games');
-    if (getVal('total_games') < currentG) {
-        document.getElementById('total_games').value = currentG || '';
-    }
-
-    calculateSetting();
-}
-
 function changeVal(id, amount) {
     const el = document.getElementById(id);
     let val = getVal(id);
     val = Math.max(0, val + amount);
     el.value = val > 0 ? val : '';
-
-    if (id === 'cz_count' || id === 'at_count') {
-        limitCumulativeData();
-    } else {
-        calculateSetting();
-    }
+    calculateSetting();
 }
 
 function addGames(amount) {
@@ -853,7 +832,7 @@ function addGames(amount) {
     let val = getVal('games');
     val = Math.max(0, val + amount);
     el.value = val > 0 ? val : '';
-    limitCumulativeData();
+    calculateSetting();
 }
 
 function addTotalGames(amount) {
@@ -861,7 +840,7 @@ function addTotalGames(amount) {
     let val = getVal('total_games');
     val = Math.max(0, val + amount);
     el.value = val > 0 ? val : '';
-    limitCumulativeData();
+    calculateSetting();
 }
 
 const SPECS = {
